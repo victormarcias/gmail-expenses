@@ -10,14 +10,14 @@ It only reads the email body, never PDF attachments.
 
 | Column | Senders | Estado |
 |---|---|---|
-| Hogar | Payments to `HOGAR` (electricity, gas, water, municipal taxes) and transfers to `TRANSFERS` aliases (expensas, cleaning). Their bills are ignored | Pagado |
-| Servicios | Payments to `SERVICES` phone, internet and TV (bills ignored). Digital services (streaming, music, games, apps, cloud, AI): their receipts, ARS or USD, credit card charges skipped | Pagado |
-| Salud | `PREPAGAS` (health insurance), paid by automatic debit | Pagado |
-| Tarjetas | `BANKS` (credit card statements only, not account statements: one row per balance, ARS and USD) | Pagar |
-| Transporte | Uber, Cabify | Pagado |
-| Compras | MercadoLibre, only debit / account money purchases; payments and transfers to anyone not known (see below) | Pagado |
-| Delivery | PedidosYa (orders and Plus), Rappi (orders and Prime), Uber Eats | Pagado |
-| Otros | Payment confirmations from any other sender (gateways, shops: "Tu pago ha sido acreditado a X", "Pago aprobado"), never from a known one | Pagado |
+| 🏠 Hogar | Payments to `HOGAR` (electricity, gas, water, municipal taxes) and transfers to `TRANSFERS` aliases (expensas, cleaning). Their bills are ignored | Pagado |
+| 📱 Servicios | Payments to `SERVICES` phone, internet and TV (bills ignored). Digital services (streaming, music, games, apps, cloud, AI): their receipts, ARS or USD, credit card charges skipped | Pagado |
+| 🩺 Salud | `PREPAGAS` (health insurance), paid by automatic debit | Pagado |
+| 💳 Tarjetas | `BANKS` (credit card statements only, not account statements: one row per balance, ARS and USD) | Pagar |
+| 🚕 Transporte | Uber, Cabify | Pagado |
+| 🛒 Compras | MercadoLibre, only debit / account money purchases; payments and transfers to anyone not known (see below) | Pagado |
+| 🛵 Delivery | PedidosYa (orders and Plus), Rappi (orders and Prime), Uber Eats | Pagado |
+| 🧾 Otros | Payment confirmations from any other sender (gateways, shops: "Tu pago ha sido acreditado a X", "Pago aprobado"), never from a known one | Pagado |
 
 ## The sheet
 
@@ -88,8 +88,18 @@ account money.
    every transfer goes to `Compras`).
 4. In the Apps Script editor: *Project Settings → Script Properties* → add
    `FILE_ID` with the sheet's ID.
-5. Run `install()` from the editor and accept the permissions. That creates the
-   trigger that runs every `RUN_EVERY_HOURS`.
+
+   <img src="images/script-properties.png" alt="Script Properties with a
+   FILE_ID property" width="480">
+
+5. Run `install()` from the editor and accept the permissions. It creates
+   the trigger that calls `run()` every `RUN_EVERY_HOURS`.
+
+   <img src="images/run-function.png" alt="Apps Script editor function
+   menu: install, run, dryRun and the other functions" width="480">
+
+   <img src="images/trigger.png" alt="Apps Script trigger: run, Time-driven,
+   Hour timer, Every hour" width="480">
 
 To process right away, run `run()`: it can be run by hand at any time, on top
 of the trigger.
@@ -135,90 +145,20 @@ or with `clasp pull` if you set up clasp later.
 
 ## Configuration
 
-Settings live in [Config.gs](Config.gs); senders, categories and patterns in
-[Categories.gs](Categories.gs); transfer aliases in `Transfers.gs`. Only IDs go
-in Script Properties.
+Every setting is explained in a comment beside it, in the file it lives in:
 
-In `Config.gs`:
+- [Config.gs](Config.gs): run interval, `dryRun()` options, the dollar rate.
+- [Categories.gs](Categories.gs): senders, categories and their patterns.
+  To add a category, add a key to `CATEGORIES`.
+- `Transfers.gs`: the aliases you transfer to and their category (template:
+  [Transfers.example.gs](Transfers.example.gs)).
 
-- `RUN_EVERY_HOURS`: hours between runs (1, 2, 4, 6, 8 or 12; default 1).
-  Run `install()` again after changing it. There's no "on new email" trigger
-  in Apps Script, so this is as close as it gets.
-- `DRY_RUN_HOURS`: how many hours back `dryRun()` looks in the inbox
-  (default 24). Raise it to test patterns against older emails.
-- `DRY_RUN_BODY_LENGTH`: how much of the body `dryRun()` logs for
-  emails that go to review (default 3000 characters).
-- `USD_RATE`: which dollar USD amounts are converted at, `'cripto'` (default)
-  or `'blue'`, selling price.
-
-In `Categories.gs`:
-
-- `BANKS`, `SERVICES` (digital), `PREPAGAS`: senders, as they appear in the From name or
-  address. `HOGAR` and the rest of `SERVICES` are names, as they appear in
-  payment emails (`viaPayments`): their own emails are never read.
-- Patterns: each category has default regexes for `subject`, `amount`, `usd`
-  and `due` (the first capture group is the value). Any list entry can be an
-  object that overrides them for that sender:
-  ```js
-  const PREPAGAS = [
-    'Galeno',
-    { name: 'OSDE', from: 'osde.com.ar', amount: /Importe\s*\$\s*([\d.,]+)/i },
-  ];
-  ```
-- Amounts: the captured number can use either format (`12.345,67` or
-  `12,345.67`): a separator followed by 1 or 2 trailing digits starts the
-  decimals, the rest are thousands separators. To accept `$`, `ARS` and `AR$`
-  (but not `US$`) in a custom pattern, build it with `PESOS`:
-  `` new RegExp(`Importe\\s*${PESOS}\\s*([\\d.,]+)`, 'i') ``.
-- `skipIf` / `onlyIf`: body patterns. `skipIf` marks the email as processed without a row;
-  if `onlyIf` doesn't match, the email goes to review.
-- `PAYMENTS`: senders of payment and transfer confirmations (wallets,
-  homebanking), with generic `subject`, `excludeSubject`, `amount` and
-  `payee` (on the subject, the capture group is who was paid) patterns.
-  Adding a wallet is usually just its name or domain in `entries`.
-  `category` is where payments to anyone not known go; an entry can set its
-  own. The `anySender` entry (`Otros pagos`) has no sender: it searches Gmail
-  with `query` and keeps the emails whose subject matches, skipping any from
-  a known sender (any list in `Categories.gs`, scanned or not).
-- `TRANSFERS`, in `Transfers.gs`: the aliases you transfer to and their
-  category (`'x.y.z': 'Hogar'` for expensas). The alias is looked for in the
-  whole payment email, ignoring case and accents. The file is git-ignored so
-  aliases never reach GitHub; `Transfers.example.gs` is its template, and
-  `.claspignore` keeps the template out of Apps Script (it would declare
-  `TRANSFERS` twice). `clasp push` does upload `Transfers.gs`.
-
-The default patterns are generic: tune them with the emails `dryRun()` shows
-as `REVIEW`.
-
-### Adding a category
-
-Add a key to `CATEGORIES` (in `Categories.gs`): the key is the column name, and the order of the
-keys is the order of the columns (between `Detalle` and `USD`). It needs
-`entries`, a `subject` and an `amount` (or `usd`) pattern and a `status`,
-either at the category level or in each entry; `run()` fails with a clear
-message if something is missing.
-
-```js
-'Mascotas': {
-  entries: [
-    { name: 'Puppis', from: 'puppis.com.ar', subject: /pedido|compra/i },
-  ],
-  amount: AMOUNT_ARS,
-  status: STATUS_PAID,
-},
-```
-
-Columns are matched by header name, so existing tabs keep working: missing
-columns are appended at the end, and columns added by hand are left alone.
-Renaming a category creates a new column; rename the header in existing tabs
-too.
+Only IDs go in Script Properties.
 
 ### Testing changes
 
-After editing `Config.gs` or `Categories.gs` (and `clasp push`, if using clasp), run `dryRun()`
-from the editor. It looks at the last `DRY_RUN_HOURS` hours of inbox emails
-that `run()` would look at, labeled or not, and logs what `run()` would do with
-each one, without labeling anything or touching the sheet:
+After a change (and `clasp push`), run `dryRun()` from the editor: it logs
+what `run()` would do, without labeling anything or touching the sheet.
 
 ```
 OK       [Salud] 12/11/2026 OSDE – Tu factura está disponible
@@ -232,8 +172,6 @@ IGNORED  Rappi – 50% OFF en tu próximo pedido
          subject didn't match
 ```
 
-For emails that go to review it also logs the start of the body the patterns
-run against: write custom patterns against that text, since it often differs
-from how the email looks. It's the email's plain text version, cleaned up:
-`*bold*` / `_italic_` markers removed and everything on one line, with single
-spaces, so patterns never need to deal with line breaks.
+Write custom patterns against the `body` it logs for `REVIEW` emails: it's
+the cleaned plain text the patterns run against, which often differs from
+how the email looks.
