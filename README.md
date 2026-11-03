@@ -1,4 +1,4 @@
-## Gmail Expenses
+# Gmail Expenses
 
 📧 Google Apps Script that reads expense emails from Gmail every hour and
 writes them into a Google Sheet, one row per transaction. Made for Argentina:
@@ -6,7 +6,7 @@ amounts like `$ 12.345,67`, dólar cripto / blue, local senders.
 
 It only reads the email body, never PDF attachments.
 
-### What it detects
+## What it detects
 
 | Column | Senders | Estado |
 |---|---|---|
@@ -19,7 +19,7 @@ It only reads the email body, never PDF attachments.
 | Delivery | PedidosYa (orders and Plus), Rappi (orders and Prime), Uber Eats | Pagado |
 | Otros | Payment confirmations from any other sender (gateways, shops: "Tu pago ha sido acreditado a X", "Pago aprobado"), never from a known one | Pagado |
 
-### The sheet
+## The sheet
 
 One tab per month (`2026-11`). With the default categories, the columns are
 `Fecha`, `Detalle`, `Hogar`, `Servicios`, `Salud`, `Tarjetas`, `Transporte`,
@@ -53,7 +53,7 @@ One tab per month (`2026-11`). With the default categories, the columns are
 - `TOTAL` row at the bottom: sums for every category and `USD`. It's rebuilt
   on every run, so rows added by hand are included.
 
-### Emails
+## Emails
 
 - Every handled email is labeled `Gmail Expenses` and left in the inbox.
   Delete them once they're in the sheet.
@@ -69,7 +69,7 @@ One tab per month (`2026-11`). With the default categories, the columns are
   what it has and labels only those emails; the rest wait for the next run.
   The first run on a full inbox may need a few manual `run()`s.
 
-### ⚠️ Double counting
+## ⚠️ Double counting
 
 Card statements are added to the total. Anything paid with a credit card that
 also has its own email (an Uber, a bill, the prepaga) is counted twice: once in
@@ -78,7 +78,7 @@ already skip credit card charges for this reason (`CREDIT_CARD`, when the
 email says so); the rest don't, since they're assumed to be paid with debit or
 account money.
 
-### Setup
+## Setup
 
 1. Create a Google Sheet (set *File → Settings → Locale* to Argentina) and copy
    its ID from the URL: `docs.google.com/spreadsheets/d/<FILE_ID>/edit`.
@@ -94,7 +94,7 @@ account money.
 To process right away, run `run()`: it can be run by hand at any time, on top
 of the trigger.
 
-#### Option A: clasp (from the terminal)
+### Option A: clasp (from the terminal)
 
 [clasp](https://github.com/google/clasp) is Google's CLI for Apps Script:
 `clasp push` uploads the local files, `clasp pull` downloads the ones in the
@@ -117,7 +117,7 @@ what runs in Google in sync.
 
 After that, every change is a `clasp push`, and `clasp open-script` opens the editor.
 
-#### Option B: copy by hand (from the web)
+### Option B: copy by hand (from the web)
 
 1. In the editor, create one script file per `.gs` file, with the same names
    (`Config`, `Categories`, `Gmail`, `Main`, `Parse`, `Sheet`, and
@@ -133,7 +133,7 @@ or with `clasp pull` if you set up clasp later.
 > ⚠️ Pick one side to edit. `clasp push` overwrites whatever was changed in
 > the web editor, and `clasp pull` overwrites local changes.
 
-### Configuration
+## Configuration
 
 Settings live in [Config.gs](Config.gs); senders, categories and patterns in
 [Categories.gs](Categories.gs); transfer aliases in `Transfers.gs`. Only IDs go
@@ -190,7 +190,7 @@ In `Categories.gs`:
 The default patterns are generic: tune them with the emails `dryRun()` shows
 as `REVIEW`.
 
-#### Adding a category
+### Adding a category
 
 Add a key to `CATEGORIES` (in `Categories.gs`): the key is the column name, and the order of the
 keys is the order of the columns (between `Detalle` and `USD`). It needs
@@ -213,7 +213,7 @@ columns are appended at the end, and columns added by hand are left alone.
 Renaming a category creates a new column; rename the header in existing tabs
 too.
 
-#### Testing changes
+### Testing changes
 
 After editing `Config.gs` or `Categories.gs` (and `clasp push`, if using clasp), run `dryRun()`
 from the editor. It looks at the last `DRY_RUN_HOURS` hours of inbox emails

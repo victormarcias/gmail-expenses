@@ -3,3 +3,10 @@
 
 # Transfer aliases
 Transfers.gs
+
+# Apps Script autocomplete extension (VS Code)
+.gas-sync/
+jsconfig.json
+
+# macOS Finder metadata
+**/.DS_Store
