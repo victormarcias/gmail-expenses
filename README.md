@@ -80,19 +80,25 @@ account money.
 
 ## Setup
 
-1. Create a Google Sheet (set *File → Settings → Locale* to Argentina) and copy
-   its ID from the URL: `docs.google.com/spreadsheets/d/<FILE_ID>/edit`.
-2. Create an empty project at https://script.google.com.
-3. Upload the code, with either option below. Copy `Transfers.example.gs` to
-   `Transfers.gs` and fill in your aliases first (optional: without it,
-   every transfer goes to `Compras`).
-4. In the Apps Script editor: *Project Settings → Script Properties* → add
-   `FILE_ID` with the sheet's ID.
+Needs [Node.js](https://nodejs.org). From the repo, run:
+
+```bash
+./setup.sh
+```
+
+It installs [clasp](https://github.com/google/clasp) (Google's CLI for Apps
+Script), creates the Apps Script project and uploads the code, then opens each
+page where something has to be done by hand:
+
+1. Turn on the Apps Script API.
+2. Create the sheet and paste its URL.
+3. Add `FILE_ID` in *Project Settings → Script Properties* (the script copies
+   the value).
 
    <img src="images/script-properties.png" alt="Script Properties with a
    FILE_ID property" width="480">
 
-5. Run `install()` from the editor and accept the permissions. It creates
+4. Run `install()` from the editor and accept the permissions. It creates
    the trigger that calls `run()` every `RUN_EVERY_HOURS`.
 
    <img src="images/run-function.png" alt="Apps Script editor function
@@ -101,47 +107,13 @@ account money.
    <img src="images/trigger.png" alt="Apps Script trigger: run, Time-driven,
    Hour timer, Every hour" width="480">
 
-To process right away, run `run()`: it can be run by hand at any time, on top
-of the trigger.
+It can be run again at any time: it skips what's already done.
 
-### Option A: clasp (from the terminal)
+After that, every change is a `clasp push`. To process right away, run
+`run()` from the editor.
 
-[clasp](https://github.com/google/clasp) is Google's CLI for Apps Script:
-`clasp push` uploads the local files, `clasp pull` downloads the ones in the
-web editor. Handy when editing `Config.gs` or `Categories.gs` often, and it keeps the repo and
-what runs in Google in sync.
-
-1. Install it, log in, and enable the Apps Script API at
-   https://script.google.com/home/usersettings:
-   ```bash
-   npm install -g @google/clasp
-   clasp login
-   ```
-2. Copy the project's Script ID (*Project Settings*). Copy `.clasp.example.json`
-   to `.clasp.json` (git-ignored), set the ID and push. `clasp create` is
-   avoided on purpose: it overwrites `appsscript.json`.
-   ```bash
-   cp .clasp.example.json .clasp.json
-   clasp push --force
-   ```
-
-After that, every change is a `clasp push`, and `clasp open-script` opens the editor.
-
-### Option B: copy by hand (from the web)
-
-1. In the editor, create one script file per `.gs` file, with the same names
-   (`Config`, `Categories`, `Gmail`, `Main`, `Parse`, `Sheet`, and
-   `Transfers` if you have it), and paste each one's content. Never
-   `Transfers.example`.
-2. *Project Settings* → check *Show "appsscript.json" manifest file in editor*,
-   then paste the content of [appsscript.json](appsscript.json) into it. Don't
-   skip it: it sets the time zone and enables the Gmail API.
-
-Changes made in the web editor don't reach the repo: copy them back by hand,
-or with `clasp pull` if you set up clasp later.
-
-> ⚠️ Pick one side to edit. `clasp push` overwrites whatever was changed in
-> the web editor, and `clasp pull` overwrites local changes.
+> ⚠️ Edit locally, not in the web editor: `clasp push` overwrites whatever
+> was changed there.
 
 ## Configuration
 

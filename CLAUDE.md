@@ -21,6 +21,7 @@ no browser checks).
 | `Gmail.gs` | Gmail search and per-message labeling (advanced Gmail service) |
 | `Transfers.gs` | Personal transfer aliases → category. Git-ignored |
 | `Transfers.example.gs` | Template for it; `.claspignore` keeps it out of Apps Script |
+| `setup.sh` | Guided install: clasp, project, push, then opens each browser step |
 | `appsscript.json` | Time zone (Buenos Aires), Gmail advanced service, V8 |
 | `images/` | README screenshots |
 
@@ -64,6 +65,10 @@ no browser checks).
   Downloads is left alone. Embed inside the matching setup step as
   `<img src="images/x.png" alt="…" width="480">`, with no text explaining
   what the image already shows.
+- Setup is `./setup.sh` only (no manual copy-paste option). It's
+  re-runnable: each step skips itself when done. It avoids leaving
+  `clasp create-script`'s overwritten `appsscript.json` and sample `Code.js`.
+  Keep README's Setup in step with it.
 - Deploy: `clasp push` (only `*.gs` and `appsscript.json` go up, per
   `.claspignore`). The user runs it; editing in the web editor and locally at
   once makes one overwrite the other.
