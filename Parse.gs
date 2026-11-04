@@ -13,6 +13,25 @@ function parseMessage(source, message) {
   if (source.skipIf && source.skipIf.test(body)) return { rows: [] };
   if (source.onlyIf && !source.onlyIf.test(body)) return { review: 'onlyIf did not match' };
 
+  // An email listing several bills: one row per bill, named and categorized
+  // like a payment to it
+  if (source.items) {
+    const rows = [...body.matchAll(source.items)]
+      .map((match) => ({ match, ars: parseAmount(match[2]) }))
+      .filter(({ ars }) => ars)
+      .map(({ match, ars }) => ({
+        date: message.getDate(),
+        detail: match[1].trim(),
+        category: aliasCategory(match[1]) || categoryOf(match[1]) || source.category,
+        due: parseDate(match[3]),
+        status: source.status,
+        ars: round2(ars),
+        usd: null,
+        note: '',
+      }));
+    return rows.length ? { rows } : { review: 'no item found' };
+  }
+
   const ars = source.amount ? parseAmount(firstMatch(source.amount, body)) : null;
   const usd = source.usd ? parseAmount(firstMatch(source.usd, body)) : null;
   if (!ars && !usd) return { review: 'no amount found' };
@@ -108,13 +127,13 @@ const MONTHS = {
   ago: 8, aug: 8, sep: 9, set: 9, oct: 10, nov: 11, dic: 12, dec: 12,
 };
 
-// dd/mm/yy, dd/mm/yyyy, or "11 Nov 26" / "11 noviembre 2026"
+// dd/mm/yy, dd/mm/yyyy (or with dashes), or "11 Nov 26" / "11 noviembre 2026"
 function parseDate(text) {
   if (!text) return null;
   const named = text.match(/^(\d{1,2})\s+([a-z]{3})[a-z]*\.?\s+(\d{2,4})$/i);
   const [day, month, year] = named
     ? [Number(named[1]), MONTHS[named[2].toLowerCase()], Number(named[3])]
-    : text.split('/').map(Number);
+    : text.split(/[/-]/).map(Number);
   if (!month) return null;
   return new Date(year < 100 ? 2000 + year : year, month - 1, day);
 }

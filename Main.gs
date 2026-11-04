@@ -194,7 +194,8 @@ function sources() {
       // Never scanned: only used to categorize payments
       if (!source.viaPayments) {
         if (!source.subject) fail('missing subject pattern');
-        if (!source.amount && !source.usd) fail('missing amount pattern');
+        if (!source.amount && !source.usd && !source.items) fail('missing amount pattern');
+        if (source.items && !source.items.global) fail('items pattern needs the g flag');
         if (!source.status) fail('missing status');
         if (source.anySender && !source.query) fail('missing query');
       }

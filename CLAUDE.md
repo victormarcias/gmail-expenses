@@ -40,6 +40,7 @@ no browser checks).
 - Bills of `HOGAR` / phone services are ignored (`viaPayments`): only the
   payment confirmation counts, named after the payee and categorized by
   alias (`TRANSFERS`), known sender name, or `PAYMENTS.category`.
+  Brubank's invoices due work the same way, one Pagar row each (`items`).
 - `dryRun()` logs `OK` / `REVIEW` / `SKIP` / `IGNORED` per email without
   touching the sheet or labels: the way to test pattern changes.
 

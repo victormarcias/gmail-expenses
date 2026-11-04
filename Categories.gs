@@ -206,6 +206,18 @@ const CATEGORIES = {
 const PAYMENTS = {
   entries: [
     { name: 'Mercado Pago', from: 'mercadopago.com.ar' },
+    // Reads invoices due from Brubank: one row per invoice ("Edemsa: $ 1.234
+    // Vence el 07-11-2026"). `items` is global: name, amount, due date.
+    {
+      name: 'Brubank',
+      from: 'brubank.com',
+      subject: /por vencer/i,
+      items: /([A-ZÁÉÍÓÚÑ][^:.,$]{0,40}?):\s*\$\s*([\d.,]+)\s*Vence el (\d{1,2}[-/]\d{1,2}[-/]\d{2,4})/g,
+      category: 'Hogar',
+      status: STATUS_TO_PAY,
+      // Not paid yet, so it can't be in a card statement
+      skipIf: null,
+    },
     // Any other sender: payment confirmations from gateways and shops ("Tu
     // pago ha sido acreditado a X.", "Pago aprobado", "Confirmación de
     // compra"). Emails from a known sender (Mercado Pago included) never get

@@ -46,7 +46,8 @@ One tab per month (`2026-11`). With the default categories, the columns are
   en Edemsa", "Transferiste a Consorcio") is a Pagado row named after the
   payee, in the category of the recipient's alias if it's in `TRANSFERS`, or
   of a known sender with the payee's name (`Hogar` for Edemsa), or `Compras`
-  if none. Confirmations from any sender that isn't known (a payment gateway,
+  if none. Brubank's invoices due give one Pagar row per invoice, named and
+  categorized the same way (`Hogar` if unknown). Confirmations from any sender that isn't known (a payment gateway,
   a shop) are picked up by their subject and go to `Otros` unless the payee is
   known; they're named after the payee in the subject, or the sender. Paid by credit card, it
   adds nothing: it's already in the statement.
