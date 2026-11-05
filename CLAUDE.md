@@ -5,10 +5,6 @@ writes one row per transaction into a Google Sheet, one tab per month
 (`2026-11`). Made for Argentina: `$ 12.345,67` amounts, dólar cripto / blue,
 local senders. Only the email body is read, never attachments.
 
-The global rules in `~/Documents/GitHub/claude-rules/CLAUDE.md` apply on top of this
-file (Spanish in chat, English in the repo, never commit or push on your own,
-no browser checks).
-
 ## Files
 
 | File | What it holds |
@@ -76,11 +72,4 @@ no browser checks).
 - No test suite. Static check: copy a `.gs` to `.js` in the scratchpad and
   run `node --check` on it. Real behavior is checked by the user with
   `dryRun()`.
-- `CLAUDE.md` and `.claude/` (memory, settings) may be staged with
-  `git add` once checked for sensitive data; never `settings.local.json`.
-- Claude's memory for this project lives in `.claude/memory/` and is
-  committed: `~/.claude/projects/<this project>/memory` is a symlink to it.
-  Nothing personal goes in it.
-- Commits: only through `/commit` (`commit/` in the `skills` repo), one-line
-  messages like "Adds commit skill, VS Code settings and README heading
-  levels."
+- `CLAUDE.md` may be staged with `git add` once checked for sensitive data.
