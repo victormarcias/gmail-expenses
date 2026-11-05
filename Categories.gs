@@ -13,9 +13,10 @@ const STATUS_PAID = 'Pagado';
 
 // Generic patterns. The first capture group is the amount. Amounts can be
 // written either way: 12.345,67 or 12,345.67. Pesos can come as "$", "ARS" or
-// "AR$", but not "US$" or "U$S".
+// "AR$", but not "US$" or "U$S". The keyword must start a word, so a
+// subtotal isn't taken for the total.
 const PESOS = /(?:ARS\s*\$?|AR\$|(?<!US|U)\$)/.source;
-const AMOUNT_ARS = new RegExp(`(?:total(?: a pagar)?|importe|monto|saldo actual)[^\\d$]{0,40}?${PESOS}\\s*([\\d.,]+)`, 'i');
+const AMOUNT_ARS = new RegExp(`\\b(?:total(?: a pagar)?|importe|monto|saldo actual)[^\\d$]{0,40}?${PESOS}\\s*([\\d.,]+)`, 'i');
 const AMOUNT_USD = /(?:U\$S|US\$|USD)\s*([\d.,]+)/i;
 const DUE_DATE = /venc(?:imiento|e)[^\d]{0,40}(\d{1,2}\/\d{1,2}\/\d{2,4})/i;
 
@@ -248,7 +249,7 @@ const PAYMENTS = {
   excludeSubject: new RegExp(`${NOT_PAID.source}|mercado ?libre`, 'i'),
   // On the subject; the capture group is who was paid
   payee: /(?:aprobado en|pagaste(?: tu factura de| a)?|compraste a|pago (?:a|de|en)|transferiste a|transferencia a|enviaste dinero a)\s+(.+)$/i,
-  amount: new RegExp(`(?:pagaste|transferiste|enviaste|pago de|total|importe|monto)[^\\d$]{0,40}?${PESOS}\\s*([\\d.,]+)`, 'i'),
+  amount: new RegExp(`\\b(?:pagaste|transferiste|enviaste|pago de|total|importe|monto)[^\\d$]{0,40}?${PESOS}\\s*([\\d.,]+)`, 'i'),
   skipIf: CREDIT_CARD,
   category: 'Compras',
   status: STATUS_PAID,
