@@ -59,7 +59,14 @@ const BANKS = [
   { name: 'Ciudad', from: 'bancociudad.com.ar' },
   { name: 'Naranja X', from: 'naranjax.com' },
   { name: 'Ualá', from: 'uala.com.ar' },
-  'Mercado Pago',
+  // No due statement, only "Pagaste $ X": already paid. MP sends other
+  // mails with "tarjeta" alone, so the full phrase is required here.
+  {
+    name: 'Mercado Pago',
+    subject: /^(?=.*resumen)(?=.*tarjeta de cr[eé]dito)/i,
+    amount: new RegExp(`\\b(?:total(?: a pagar)?|importe|monto|saldo actual|pagaste)[^\\d$]{0,40}?${PESOS}\\s*([\\d.,]+)`, 'i'),
+    status: STATUS_PAID,
+  },
 ];
 
 // The house's essentials: electricity, gas, water, municipal taxes. They're
