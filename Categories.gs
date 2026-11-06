@@ -25,7 +25,7 @@ const DUE_DATE = /venc(?:imiento|e)[^\d]{0,40}(\d{1,2}\/\d{1,2}\/\d{2,4})/i;
 const CREDIT_CARD = /tarjeta de cr[eé]dito|credit card|cuotas/i;
 
 // Subject of a receipt (as opposed to a bill or a promo)
-const RECEIPT = /recibo|pago|factura|cobro|compra|receipt|purchase|payment/i;
+const RECEIPT = /recibo|pago|factura|cobro|compra|pagaste|receipt|purchase|payment/i;
 
 // Subject of a payment email that isn't money going out: money coming in,
 // refunds, and failed or pending payments
@@ -35,7 +35,7 @@ const NOT_PAID = new RegExp([
 ].join('|'), 'i');
 
 // Credit card statements (resumen de tarjeta).
-const BANKS = [
+const CREDIT_CARDS = [
   // Value first, then its label: "11 Noviembre 2026 Fecha de vencimiento
   // $ 50.079,83 Saldo en pesos U$S 88,84 Saldo en dólares"
   {
@@ -59,11 +59,10 @@ const BANKS = [
   { name: 'Ciudad', from: 'bancociudad.com.ar' },
   { name: 'Naranja X', from: 'naranjax.com' },
   { name: 'Ualá', from: 'uala.com.ar' },
-  // No due statement, only "Pagaste $ X": already paid. MP sends other
-  // mails with "tarjeta" alone, so the full phrase is required here.
+  // No due statement, only "Pagaste $ X": already paid.
   {
     name: 'Mercado Pago',
-    subject: /^(?=.*resumen)(?=.*tarjeta de cr[eé]dito)/i,
+    subject: new RegExp(`(?=.*(?:${RECEIPT.source}))(?=.*(?:${CREDIT_CARD.source}))`, 'i'),
     amount: new RegExp(`\\b(?:total(?: a pagar)?|importe|monto|saldo actual|pagaste)[^\\d$]{0,40}?${PESOS}\\s*([\\d.,]+)`, 'i'),
     status: STATUS_PAID,
   },
@@ -152,7 +151,7 @@ const CATEGORIES = {
     status: STATUS_PAID,
   },
   'Tarjetas': {
-    entries: BANKS,
+    entries: CREDIT_CARDS,
     // "Resumen" plus a card, in any order, so account statements (caja de
     // ahorro, cuenta corriente) are ignored. Galicia's card statement is
     // "Resumen de Cuenta VISA", so "cuenta" alone can't rule one out.
