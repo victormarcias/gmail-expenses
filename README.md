@@ -130,8 +130,9 @@ Only IDs go in Script Properties.
 
 ### Testing changes
 
-After a change (and `clasp push`), run `dryRun()` from the editor: it logs
-what `run()` would do, without labeling anything or touching the sheet.
+After a change, run `./upload.sh` (it pushes the code and opens the project),
+then run `dryRun()` from the editor: it logs what `run()` would do, without
+labeling anything or touching the sheet.
 
 ```
 OK       [Salud] 12/11/2026 OSDE – Tu factura está disponible

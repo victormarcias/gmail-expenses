@@ -18,6 +18,7 @@ local senders. Only the email body is read, never attachments.
 | `Transfers.gs` | Personal transfer aliases → category. Git-ignored |
 | `Transfers.example.gs` | Template for it; `.claspignore` keeps it out of Apps Script |
 | `setup.sh` | Guided install: clasp, project, push, then opens each browser step |
+| `upload.sh` | `clasp push` plus opening the project in the browser |
 | `appsscript.json` | Time zone (Buenos Aires), Gmail advanced service, V8 |
 | `images/` | README screenshots |
 
@@ -66,9 +67,9 @@ local senders. Only the email body is read, never attachments.
   re-runnable: each step skips itself when done. It avoids leaving
   `clasp create-script`'s overwritten `appsscript.json` and sample `Code.js`.
   Keep README's Setup in step with it.
-- Deploy: `clasp push` (only `*.gs` and `appsscript.json` go up, per
-  `.claspignore`). The user runs it; editing in the web editor and locally at
-  once makes one overwrite the other.
+- Deploy: `./upload.sh` or `clasp push` (only `*.gs` and `appsscript.json` go
+  up, per `.claspignore`). The user runs it; editing in the web editor and
+  locally at once makes one overwrite the other.
 - No test suite. Static check: copy a `.gs` to `.js` in the scratchpad and
   run `node --check` on it. Real behavior is checked by the user with
   `dryRun()`.
