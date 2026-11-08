@@ -5,10 +5,12 @@
 // only labels whole threads, and monthly emails (statements, bills) usually
 // end up in the same thread.
 
-function findMessageIds(source, since, includeLabeled) {
+// Inbox emails that aren't labeled yet, however old, plus the labeled ones
+// received after `labeledSince` (unix seconds) when it's given.
+function findMessageIds(source, labeledSince) {
   const terms = ['in:inbox', source.anySender ? source.query : `from:"${source.from}"`];
-  if (since) terms.push(`after:${since}`);
-  if (!includeLabeled) terms.push(`-label:${searchName(LABEL)}`);
+  const unlabeled = `-label:${searchName(LABEL)}`;
+  terms.push(labeledSince ? `(after:${labeledSince} OR ${unlabeled})` : unlabeled);
   const query = terms.join(' ');
 
   const ids = [];

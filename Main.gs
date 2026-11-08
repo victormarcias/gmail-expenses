@@ -9,8 +9,9 @@
 //              old: from a known sender, or a payment confirmation from any
 //              other. The trigger calls this; it can also be run by hand at
 //              any time.
-//   dryRun()   logs what the last DRY_RUN_HOURS of emails would produce,
-//              without labeling them or touching the sheet.
+//   dryRun()   logs what run() would do with the inbox, plus the emails
+//              labeled in the last DRY_RUN_HOURS, without labeling anything or
+//              touching the sheet.
 
 function install() {
   openSpreadsheet();
@@ -45,7 +46,7 @@ function run() {
     const handled = [];
 
     // Unreadable emails are labeled too: the log is the only trace of them
-    const finished = scanMessages(null, false, (source, id, message, result) => {
+    const finished = scanMessages(null, (source, id, message, result) => {
       if (result.review) console.error(`${logName(source, message)} "${message.getSubject()}": ${result.review}`);
       else rows.push(...result.rows);
       handled.push(id);
@@ -70,13 +71,14 @@ function run() {
 }
 
 // For tuning Categories.gs: one log line per email run() would handle,
-// labeled or not, saying what it would do with it.
-function dryRun(hours = DRY_RUN_HOURS) {
-  const since = Math.floor(Date.now() / 1000) - hours * 3600;
+// saying what it would do with it. Besides the pending ones (unlabeled, however
+// old), it includes the labeled ones from the last DRY_RUN_HOURS.
+function dryRun() {
+  const since = Math.floor(Date.now() / 1000) - DRY_RUN_HOURS * 3600;
   const formatDate = (date) => Utilities.formatDate(date, Session.getScriptTimeZone(), 'dd/MM/yyyy');
   let count = 0;
 
-  const { unmatched } = scanMessages(since, true, (source, id, message, result) => {
+  const { unmatched } = scanMessages(since, (source, id, message, result) => {
     count++;
     const email = `[${source.category}] ${formatDate(message.getDate())} ${logName(source, message)} – ${message.getSubject()}`;
     if (result.review) {
@@ -99,7 +101,7 @@ function dryRun(hours = DRY_RUN_HOURS) {
   });
 
   unmatched.forEach((email) => console.log(`IGNORED  ${email}\n         subject didn't match`));
-  console.log(`${count} handled, ${unmatched.length} ignored in the last ${hours} hours.`);
+  console.log(`${count} handled, ${unmatched.length} ignored.`);
 }
 
 // Who the email is from, for the logs: an `anySender` source's name says
@@ -110,11 +112,12 @@ function logName(source, message) {
 
 // Calls handle(source, id, message, result) once per inbox email from a known
 // sender whose subject matches, or from any other sender for `anySender`
-// sources (`since`: unix seconds, or null for no limit). Stops early once
+// sources (`labeledSince`: unix seconds; labeled emails are skipped unless
+// they're newer, and null skips them all). Stops early once
 // `deadline` (ms timestamp) passes. Returns whether it got through every
 // email, and the emails from known senders that no subject matched, for
 // dryRun().
-function scanMessages(since, includeLabeled, handle, deadline = Infinity) {
+function scanMessages(labeledSince, handle, deadline = Infinity) {
   const seen = {};
   const unmatched = {};
   let finished = true;
@@ -129,7 +132,7 @@ function scanMessages(since, includeLabeled, handle, deadline = Infinity) {
 
   scanned.forEach((source) => {
     if (!finished) return;
-    findMessageIds(source, since, includeLabeled).forEach((id) => {
+    findMessageIds(source, labeledSince).forEach((id) => {
       // The same sender can feed two categories (Uber / Uber Eats)
       if (!finished || seen[id]) return;
       if (Date.now() > deadline) {

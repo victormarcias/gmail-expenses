@@ -9,8 +9,9 @@
 // doesn't guarantee the exact minute. Re-run install() after changing it.
 const RUN_EVERY_HOURS = 1;
 
-// How many hours back dryRun() looks, labeled emails included.
-const DRY_RUN_HOURS = 24;
+// How many hours back dryRun() also looks at emails that are already labeled.
+// Unlabeled inbox emails are always included, however old.
+const DRY_RUN_HOURS = 72;
 
 // How much of the cleaned body dryRun() logs for emails that go to review.
 const DRY_RUN_BODY_LENGTH = 3000;
