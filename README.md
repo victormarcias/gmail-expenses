@@ -10,14 +10,14 @@ It only reads the email body, never PDF attachments.
 
 | Column | Senders | Estado |
 |---|---|---|
-| 🏠 Hogar | Payments to `HOGAR` (electricity, gas, water, municipal taxes) and transfers to `TRANSFERS` aliases (expensas, cleaning). Their bills are ignored | Pagado |
+| 🏠 Hogar | Payments to `HOGAR` (electricity, gas, water, municipal taxes) and transfers to `TRANSFERS` aliases (expensas, cleaning). Their bills are ignored. Due notices from a few senders (home insurance, a bank's invoices due) are read | Pagado, or Pagar for the due notices |
 | 📱 Servicios | Payments to `SERVICES` phone, internet and TV (bills ignored). Digital services (streaming, music, games, apps, cloud, AI): their receipts, ARS or USD, credit card charges skipped | Pagado |
 | 🩺 Salud | `PREPAGAS` (health insurance), paid by automatic debit | Pagado |
 | 💳 Tarjetas | `CREDIT_CARDS` (credit card statements only, not account statements: one row per balance, ARS and USD) | Pagar |
 | 🚕 Transporte | Uber, Cabify | Pagado |
 | 🛒 Compras | MercadoLibre, only debit / account money purchases; payments and transfers to anyone not known (see below) | Pagado |
-| 🛵 Delivery | PedidosYa (orders and Plus), Rappi (orders and Prime), Uber Eats | Pagado |
 | 🧾 Otros | Payment confirmations from any other sender (gateways, shops: "Tu pago ha sido acreditado a X", "Pago aprobado"), never from a known one | Pagado |
+| 🛵 Delivery | PedidosYa (orders and Plus), Rappi (orders and Prime), Uber Eats | Pagado |
 
 ## The sheet
 
@@ -28,29 +28,30 @@ One tab per month (`2026-11`). With the default categories, the columns are
 - Each run writes to the tab of the month **it runs in**, not the email's: a
   bill sent on the 31st lands in next month's tab, when it's paid.
 - One row per transaction, sorted by email date (`Fecha`), with the sender's
-  name in `Detalle` (`Galicia`, `Uber`) and the amount in its category column.
+  name in `Detalle` (`Uber`) and the amount in its category column.
 - `USD`: the original amount of USD charges. The same row also has the amount
   in pesos in its category, at the dollar set in `USD_RATE` (cripto by
   default) from [DolarApi](https://dolarapi.com).
   The rate used is in the cell's note; if DolarApi is down, the last rate that
   worked is used and the note says so.
 - An email with both a pesos and a USD amount (a statement with both balances,
-  like Brubank's or Galicia's) gives two rows: one with the pesos balance, and
-  one with the USD balance and its conversion.
+  from some banks) gives two rows: one with the pesos balance, and one with the
+  USD balance and its conversion.
 - `Vencimiento`: due date for bills and statements.
-- `Estado`: Pagar / Pagado dropdown. Only card statements come in as Pagar;
-  switch them by hand once paid.
-- Payments: house and phone/internet bills are paid through Mercado Pago, so
-  their bills are ignored and only what was actually paid is added. Each
-  payment or transfer confirmation from a `PAYMENTS` sender ("Pago aprobado
-  en Edemsa", "Transferiste a Consorcio") is a Pagado row named after the
-  payee, in the category of the recipient's alias if it's in `TRANSFERS`, or
-  of a known sender with the payee's name (`Hogar` for Edemsa), or `Compras`
-  if none. Brubank's invoices due give one Pagar row per invoice, named and
-  categorized the same way (`Hogar` if unknown). Confirmations from any sender that isn't known (a payment gateway,
-  a shop) are picked up by their subject and go to `Otros` unless the payee is
-  known; they're named after the payee in the subject, or the sender. Paid by credit card, it
-  adds nothing: it's already in the statement.
+- `Estado`: Pagar / Pagado dropdown. Card statements and due notices come in
+  as Pagar; switch them by hand once paid.
+- Payments: house and phone/internet bills are paid through a wallet, so their
+  bills are ignored and only what was actually paid is added. Each payment or
+  transfer confirmation from a `PAYMENTS` sender ("Pago aprobado en X",
+  "Transferiste a X") is a Pagado row named after the payee, in the category of
+  the recipient's alias if it's in `TRANSFERS`, or of a known sender with the
+  payee's name (`Hogar` for a utility), or `Compras` if none. An email listing
+  invoices due gives one Pagar row per invoice, named and categorized the same
+  way (`Hogar` if unknown). Confirmations from any sender that isn't known (a
+  payment gateway, a shop) are picked up by their subject and go to `Otros`
+  unless the payee is known; they're named after the payee in the subject, or
+  the sender. Paid by credit card, it adds nothing: it's already in the
+  statement.
 - `TOTAL` row at the bottom: sums for every category and `USD`. It's rebuilt
   on every run, so rows added by hand are included.
 
@@ -74,10 +75,10 @@ One tab per month (`2026-11`). With the default categories, the columns are
 
 Card statements are added to the total. Anything paid with a credit card that
 also has its own email (an Uber, a bill, the prepaga) is counted twice: once in
-its column and once inside the statement. MercadoLibre, streaming and payments
-already skip credit card charges for this reason (`CREDIT_CARD`, when the
-email says so); the rest don't, since they're assumed to be paid with debit or
-account money.
+its column and once inside the statement. Online shop purchases, streaming and
+payments already skip credit card charges for this reason (`CREDIT_CARD`, when
+the email says so); the rest don't, since they're assumed to be paid with debit
+or account money.
 
 ## Setup
 
@@ -110,8 +111,8 @@ page where something has to be done by hand:
 
 It can be run again at any time: it skips what's already done.
 
-After that, every change is a `clasp push`. To process right away, run
-`run()` from the editor.
+After that, every change goes up with `./upload.sh` (`clasp push`, then it
+opens the project). To process right away, run `run()` from the editor.
 
 > ⚠️ Edit locally, not in the web editor: `clasp push` overwrites whatever
 > was changed there.
@@ -120,7 +121,8 @@ After that, every change is a `clasp push`. To process right away, run
 
 Every setting is explained in a comment beside it, in the file it lives in:
 
-- [Config.gs](Config.gs): run interval, `dryRun()` options, the dollar rate.
+- [Config.gs](Config.gs): run interval, `dryRun()` options, the dollar rate
+  and the label.
 - [Categories.gs](Categories.gs): senders, categories and their patterns.
   To add a category, add a key to `CATEGORIES`.
 - `Transfers.gs`: the aliases you transfer to and their category (template:
@@ -130,19 +132,20 @@ Only IDs go in Script Properties.
 
 ### Testing changes
 
-After a change, run `./upload.sh` (it pushes the code and opens the project),
-then run `dryRun()` from the editor: it logs what `run()` would do, without
-labeling anything or touching the sheet.
+After a change, run `./upload.sh`, then run `dryRun()` from the editor: it
+logs what `run()` would do with the unlabeled inbox emails, plus the labeled
+ones from the last `DRY_RUN_HOURS`, without labeling anything or touching the
+sheet.
 
 ```
-OK       [Salud] 12/11/2026 OSDE – Tu factura está disponible
+OK       [Salud] 12/11/2026 Prepaga – Tu factura está disponible
          $ 185000 | vence 22/11/2026 | Pagado
-REVIEW   [Compras] 05/11/2026 Mercado Pago – Pago aprobado en Edemsa
+REVIEW   [Compras] 05/11/2026 Wallet – Pago aprobado en Empresa
          no amount found
-         body: "Hola,\nLe pagaste a Edemsa…"
-SKIP     [Compras] 08/11/2026 MercadoLibre – Compraste Auriculares
+         body: "Hola,\nLe pagaste a Empresa…"
+SKIP     [Compras] 08/11/2026 Tienda – Compraste Auriculares
          skipIf matched
-IGNORED  Rappi – 50% OFF en tu próximo pedido
+IGNORED  Delivery – 50% OFF en tu próximo pedido
          subject didn't match
 ```
 

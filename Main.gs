@@ -140,9 +140,10 @@ function scanMessages(labeledSince, handle, deadline = Infinity) {
         return;
       }
 
-      const message = GmailApp.getMessageById(id);
-      if (source.anySender && isKnown(message.getFrom())) return;
-      const subject = message.getSubject();
+      // Only the headers, which is much lighter than the whole message: the
+      // full one is fetched below, once the subject is known to match
+      const { from, subject } = messageHeaders(id);
+      if (source.anySender && isKnown(from)) return;
       if (!source.subject.test(subject) || (source.excludeSubject && source.excludeSubject.test(subject))) {
         // Any email with "pago" in the subject: too many to list
         if (!source.anySender) unmatched[id] = `${source.name} – ${subject}`;
@@ -150,6 +151,8 @@ function scanMessages(labeledSince, handle, deadline = Infinity) {
       }
       seen[id] = true;
       delete unmatched[id];
+
+      const message = GmailApp.getMessageById(id);
 
       let result;
       try {

@@ -23,6 +23,19 @@ function findMessageIds(source, labeledSince) {
   return ids;
 }
 
+// The From and Subject of a message, without downloading its body
+function messageHeaders(id) {
+  const { payload } = Gmail.Users.Messages.get('me', id, {
+    format: 'metadata',
+    metadataHeaders: ['From', 'Subject'],
+  });
+  const header = (name) => {
+    const found = (payload.headers || []).find((h) => h.name.toLowerCase() === name);
+    return found ? found.value : '';
+  };
+  return { from: header('from'), subject: header('subject') };
+}
+
 function markMessages(ids, id) {
   // batchModify takes up to 1000 ids
   for (let i = 0; i < ids.length; i += 1000) {
