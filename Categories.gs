@@ -81,6 +81,17 @@ const HOGAR = [
   'AYSAM', 'AySA', 'Aguas Cordobesas', 'ABSA',
   // Taxes
   'Municipio',
+  // Home insurance: paid by hand, so its due notice is read and the row waits
+  // as Pagar. The notice isn't a card charge, so nothing is skipped.
+  {
+    name: 'La Segunda',
+    from: 'lasegunda.com.ar',
+    subject: /por vencer/i,
+    amount: AMOUNT_ARS,
+    due: DUE_DATE,
+    status: STATUS_TO_PAY,
+    viaPayments: false,
+  },
 ];
 
 // Secondary bills: phone, internet, TV, and any digital service.
