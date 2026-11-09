@@ -29,6 +29,8 @@ One tab per month (`2026-11`). With the default categories, the columns are
   bill sent on the 31st lands in next month's tab, when it's paid.
 - One row per transaction, sorted by email date (`Fecha`), with the sender's
   name in `Detalle` (`Uber`) and the amount in its category column.
+- An email of the same thread that arrives within `ADJUSTED_RECEIPT_HOURS` of an
+  earlier one (an adjusted receipt) adds no row: the first amount stays.
 - `USD`: the original amount of USD charges. The same row also has the amount
   in pesos in its category, at the dollar set in `USD_RATE` (cripto by
   default) from [DolarApi](https://dolarapi.com).

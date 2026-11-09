@@ -87,7 +87,7 @@ function dryRun() {
       const body = JSON.stringify(cleanBody(message).slice(0, DRY_RUN_BODY_LENGTH));
       console.log(`REVIEW   ${email}\n         ${result.review}\n         body: ${body}`);
     } else if (!result.rows.length) {
-      console.log(`SKIP     ${email}\n         skipIf matched`);
+      console.log(`SKIP     ${email}\n         ${result.skip}`);
     } else {
       result.rows.forEach((row, index) => {
         const details = [`$ ${row.ars}`];

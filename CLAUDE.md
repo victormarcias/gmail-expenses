@@ -30,6 +30,9 @@ local senders. Only the email body is read, never attachments.
   (logged). Every handled email gets the `Gmail Expenses` label.
 - Rows go to the tab of the month the run happens in, not the email's month.
 - Rows are written before labels, so a failed write retries next run.
+- An email less than `ADJUSTED_RECEIPT_HOURS` after an earlier one of its
+  Gmail thread is an adjusted receipt: labeled, no row, so the first
+  email's amount is the one that counts.
 - `TIME_BUDGET_MS` (4 min) stops scanning before Apps Script's 6-minute
   limit; the rest waits for the next run.
 - USD amounts: own `USD` column, plus the peso conversion in the category,

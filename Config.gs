@@ -13,6 +13,11 @@ const RUN_EVERY_HOURS = 1;
 // Unlabeled inbox emails are always included, however old.
 const DRY_RUN_HOURS = 72;
 
+// An email that comes within this many hours after another one of its Gmail
+// thread (an adjusted receipt, which repeats the first one with a new amount)
+// adds no row: the first email's amount is the one that counts.
+const ADJUSTED_RECEIPT_HOURS = 2;
+
 // How much of the cleaned body dryRun() logs for emails that go to review.
 const DRY_RUN_BODY_LENGTH = 3000;
 

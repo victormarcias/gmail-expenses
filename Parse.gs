@@ -10,7 +10,8 @@ const DOLARAPI_URL = 'https://dolarapi.com/v1/dolares/';
 function parseMessage(source, message) {
   const body = cleanBody(message);
 
-  if (source.skipIf && source.skipIf.test(body)) return { rows: [] };
+  if (isAdjustedReceipt(message)) return { rows: [], skip: 'adjusted receipt of an earlier email in its thread' };
+  if (source.skipIf && source.skipIf.test(body)) return { rows: [], skip: 'skipIf matched' };
   if (source.onlyIf && !source.onlyIf.test(body)) return { review: 'onlyIf did not match' };
 
   // An email listing several bills: one row per bill, named and categorized
@@ -72,6 +73,18 @@ function senderName(message) {
   const from = message.getFrom();
   const name = from.replace(/<[^>]*>/, '').replace(/"/g, '').trim();
   return name || from.replace(/[<>]/g, '').trim();
+}
+
+// An email that comes within ADJUSTED_RECEIPT_HOURS after an earlier one of its
+// thread is an adjusted receipt: the first email's amount is the one
+// that counts. Monthly emails that share a thread are too far apart for it.
+function isAdjustedReceipt(message) {
+  const limit = ADJUSTED_RECEIPT_HOURS * 3600 * 1000;
+  const date = message.getDate().getTime();
+  return message.getThread().getMessages().some((other) => {
+    const gap = date - other.getDate().getTime();
+    return gap > 0 && gap < limit;
+  });
 }
 
 // The category of the first transfer alias that appears in `text`, or null
