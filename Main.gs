@@ -197,6 +197,9 @@ function sources() {
       const fail = (problem) => { throw new Error(`${group} / ${source.name}: ${problem}.`); };
 
       if (!CATEGORIES[source.category]) fail(`unknown category "${source.category}"`);
+      if (source.reroute && !CATEGORIES[source.reroute.category]) {
+        fail(`unknown reroute category "${source.reroute.category}"`);
+      }
       // Never scanned: only used to categorize payments
       if (!source.viaPayments) {
         if (!source.subject) fail('missing subject pattern');

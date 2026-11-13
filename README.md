@@ -17,13 +17,15 @@ It only reads the email body, never PDF attachments.
 | 🚕 Transporte | Uber, Cabify | Pagado |
 | 🛒 Compras | MercadoLibre, only debit / account money purchases; payments and transfers to anyone not known (see below) | Pagado |
 | 🧾 Otros | Payment confirmations from any other sender (gateways, shops: "Tu pago ha sido acreditado a X", "Pago aprobado"), never from a known one | Pagado |
-| 🛵 Delivery | PedidosYa (orders and Plus), Rappi (orders and Prime), Uber Eats | Pagado |
+| 🥦 Supermercado | PedidosYa Market, Jumbo, Disco, Vea, Coto, Carrefour, Día, ChangoMâs, La Anónima | Pagado |
+| 🛵 Delivery | PedidosYa (orders and Plus, not Market), Rappi (orders and Prime), Uber Eats | Pagado |
 
 ## The sheet
 
 One tab per month (`2026-11`). With the default categories, the columns are
 `Fecha`, `Detalle`, `Hogar`, `Servicios`, `Salud`, `Tarjetas`, `Transporte`,
-`Compras`, `Delivery`, `Otros`, `USD`, `Vencimiento` and `Estado`.
+`Compras`, `Supermercado`, `Delivery`, `Otros`, `USD`, `Vencimiento` and
+`Estado`.
 
 - Each run writes to the tab of the month **it runs in**, not the email's: a
   bill sent on the 31st lands in next month's tab, when it's paid.
@@ -113,7 +115,7 @@ page where something has to be done by hand:
 
 It can be run again at any time: it skips what's already done.
 
-After that, every change goes up with `./upload.sh` (`clasp push`, then it
+After that, every change goes up with `./deploy.sh` (`clasp push`, then it
 opens the project). To process right away, run `run()` from the editor.
 
 > ⚠️ Edit locally, not in the web editor: `clasp push` overwrites whatever
@@ -134,7 +136,7 @@ Only IDs go in Script Properties.
 
 ### Testing changes
 
-After a change, run `./upload.sh`, then run `dryRun()` from the editor: it
+After a change, run `./deploy.sh`, then run `dryRun()` from the editor: it
 logs what `run()` would do with the unlabeled inbox emails, plus the labeled
 ones from the last `DRY_RUN_HOURS`, without labeling anything or touching the
 sheet.

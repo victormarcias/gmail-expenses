@@ -9,6 +9,10 @@ const DOLARAPI_URL = 'https://dolarapi.com/v1/dolares/';
 // one in pesos, and one with the USD amount and its conversion to pesos.
 function parseMessage(source, message) {
   const body = cleanBody(message);
+  const { reroute } = source;
+  if (reroute && reroute.body.test(body)) {
+    source = { ...source, name: reroute.name, category: reroute.category };
+  }
 
   if (isAdjustedReceipt(message)) return { rows: [], skip: 'adjusted receipt of an earlier email in its thread' };
   if (source.skipIf && source.skipIf.test(body)) return { rows: [], skip: 'skipIf matched' };

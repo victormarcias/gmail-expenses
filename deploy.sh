@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Gmail Expenses: uploads the code to Apps Script with clasp and opens the
+# Gmail Expenses: deploys the code to Apps Script with clasp and opens the
 # project in the browser, to run dryRun() there.
 # author: @victormarcias
 #
-# Usage: ./upload.sh
+# Usage: ./deploy.sh
 
 set -euo pipefail
 cd "$(dirname "$0")"

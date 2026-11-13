@@ -7,6 +7,10 @@
 // category's patterns for that sender:
 //
 //   { name: 'X', from: 'x.com.ar', amount: /Total\s*\$\s*([\d.,]+)/i }
+//
+// `reroute` ({ body, name, category }): when the body matches, the row gets
+// that name and goes in that category instead, for a sender whose emails
+// belong in two categories and only the body tells them apart.
 
 const STATUS_TO_PAY = 'Pagar';
 const STATUS_PAID = 'Pagado';
@@ -197,9 +201,38 @@ const CATEGORIES = {
     amount: AMOUNT_ARS,
     status: STATUS_PAID,
   },
+  // Also gets PedidosYa Market orders, rerouted from Delivery
+  'Supermercado': {
+    entries: [
+      // Supermarket chains' online orders. Short or common names go by
+      // domain, so they don't catch unrelated senders.
+      { name: 'Jumbo', from: 'jumbo.com.ar' },
+      { name: 'Disco', from: 'disco.com.ar' },
+      { name: 'Vea', from: 'vea.com.ar' },
+      { name: 'Coto', from: 'coto.com.ar' },
+      { name: 'Carrefour', from: 'carrefour.com.ar' },
+      { name: 'Día', from: 'supermercadosdia.com.ar' },
+      { name: 'ChangoMâs', from: 'changomas.com.ar' },
+      { name: 'La Anónima', from: 'laanonima.com.ar' },
+    ],
+    subject: /pedido|compra|orden|recibo/i,
+    amount: AMOUNT_ARS,
+    status: STATUS_PAID,
+  },
   'Delivery': {
     entries: [
-      { name: 'PedidosYa', from: 'pedidosya.com', subject: /pedido|recibo|plus/i },
+      // Its grocery store shares the sender and the subject: only the body
+      // names it, so those orders are rerouted to Supermercado
+      {
+        name: 'PedidosYa',
+        from: 'pedidosya.com',
+        subject: /pedido|recibo|plus/i,
+        reroute: {
+          body: /PedidosYa Market/i,
+          name: 'PedidosYa Market',
+          category: 'Supermercado',
+        },
+      },
       { name: 'Rappi', from: 'rappi', subject: /pedido|orden|recibo|prime/i },
       { name: 'Uber Eats', from: 'uber.com', subject: /eats/i },
     ],
