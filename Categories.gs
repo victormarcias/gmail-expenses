@@ -72,38 +72,49 @@ const CREDIT_CARDS = [
   },
 ];
 
-// The house's essentials: electricity, gas, water, municipal taxes. They're
-// paid through a wallet, so their bills are ignored: these names only decide
-// that a payment to them goes in Hogar (see PAYMENTS). Expensas and cleaning
-// are paid by transfer: their aliases go in TRANSFERS (Transfers.gs).
-const HOGAR = [
-  // Electricity
-  'Cooperativa Electrica', 'Edemsa', 'Edenor', 'Edesur', 'Edelap', 'EPEC',
-  // Gas
-  'Ecogas', 'Metrogas', 'Naturgy', 'Camuzzi', 'Litoral Gas',
-  // Water
-  'AYSAM', 'AySA', 'Aguas Cordobesas', 'ABSA',
-  // Taxes
-  'Municipio',
-  // Home insurance: paid by hand, so its due notice is read and the row waits
-  // as Pagar. The notice isn't a card charge, so nothing is skipped.
+// A bill still to be paid: its row waits as Pagar, with the due date. Whoever
+// pays it marks the row Pagado by hand, since many services send no payment
+// confirmation.
+const BILL_PATTERNS = {
+  subject: /factura|vencimiento/i,
+  amount: AMOUNT_ARS,
+  due: DUE_DATE,
+  status: STATUS_TO_PAY,
+};
+
+// The house's essentials: electricity, gas, water, municipal taxes. Their
+// bills are read as BILL_PATTERNS. Expensas and cleaning are paid by transfer:
+// their aliases go in TRANSFERS (Transfers.gs).
+const BILLS = [
+  ...[
+    // Electricity
+    'Cooperativa Electrica', 'Edemsa', 'Edenor', 'Edesur', 'Edelap', 'EPEC',
+    // Gas
+    'Ecogas', 'Metrogas', 'Naturgy', 'Camuzzi', 'Litoral Gas',
+    // Water
+    'AYSAM', 'AySA', 'Aguas Cordobesas', 'ABSA',
+    // Taxes
+    'Municipio',
+  ].map((name) => ({ name, ...BILL_PATTERNS })),
+  // Home insurance: only its due notice counts.
   {
     name: 'La Segunda',
     from: 'lasegunda.com.ar',
+    ...BILL_PATTERNS,
     subject: /por vencer/i,
-    amount: AMOUNT_ARS,
-    due: DUE_DATE,
-    status: STATUS_TO_PAY,
-    viaPayments: false,
   },
 ];
 
 // Secondary bills: phone, internet, TV, and any digital service.
 const SERVICES = [
-  // Phone, internet, TV: like HOGAR, bills are ignored and the names only
-  // categorize payments
-  'Movistar', 'Tuenti', { name: 'Claro', from: 'claro.com.ar' },
-  { name: 'Personal', from: 'personal.com.ar' }, 'Telecentro', 'DirecTV',
+  // Phone, internet, TV: like BILLS, read as BILL_PATTERNS
+  ...[
+    'Movistar', 'Tuenti', { name: 'Claro', from: 'claro.com.ar' },
+    { name: 'Personal', from: 'personal.com.ar' }, 'Telecentro', 'DirecTV',
+  ].map((entry) => ({
+    ...BILL_PATTERNS,
+    ...(typeof entry === 'string' ? { name: entry } : entry),
+  })),
   // Digital services (streaming, music, games, apps, cloud, AI): charged
   // automatically, so their receipts are read, with no due date, sometimes in
   // USD, and credit card charges are skipped. Only receipts, so promos are
@@ -125,7 +136,7 @@ const SERVICES = [
     { name: 'ChatGPT', from: 'openai.com' },
     { name: 'Claude', from: 'anthropic.com' },
   ].map((entry) => ({
-    subject: RECEIPT, usd: AMOUNT_USD, skipIf: CREDIT_CARD, viaPayments: false, ...entry,
+    subject: RECEIPT, usd: AMOUNT_USD, skipIf: CREDIT_CARD, ...entry,
   })),
 ];
 
@@ -143,17 +154,12 @@ const PREPAGAS = [
 //
 // Category defaults. `subject` must match for a message to be handled at all;
 // messages from a known sender whose subject doesn't match are left untouched.
-// `viaPayments`: the senders' own emails are never read; their names only
-// decide the category of a payment to them (see PAYMENTS).
 const CATEGORIES = {
   'Hogar': {
-    entries: HOGAR,
-    viaPayments: true,
+    entries: BILLS,
   },
   'Servicios': {
-    // Only the digital services are read (they set viaPayments: false)
     entries: SERVICES,
-    viaPayments: true,
     amount: AMOUNT_ARS,
     status: STATUS_PAID,
   },

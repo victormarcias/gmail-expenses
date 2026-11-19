@@ -10,3 +10,6 @@ jsconfig.json
 
 # macOS Finder metadata
 **/.DS_Store
+
+# Account the deploy must run as
+.env

@@ -10,5 +10,6 @@ cd "$(dirname "$0")"
 
 command -v clasp >/dev/null || { echo "✖ clasp is missing: run ./setup.sh" >&2; exit 1; }
 
+./login.sh
 clasp push --force
 clasp open-script

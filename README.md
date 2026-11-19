@@ -10,8 +10,8 @@ It only reads the email body, never PDF attachments.
 
 | Column | Senders | Estado |
 |---|---|---|
-| 🏠 Hogar | Payments to `HOGAR` (electricity, gas, water, municipal taxes) and transfers to `TRANSFERS` aliases (expensas, cleaning). Their bills are ignored. Due notices from a few senders (home insurance, a bank's invoices due) are read | Pagado, or Pagar for the due notices |
-| 📱 Servicios | Payments to `SERVICES` phone, internet and TV (bills ignored). Digital services (streaming, music, games, apps, cloud, AI): their receipts, ARS or USD, credit card charges skipped | Pagado |
+| 🏠 Hogar | Payments to `BILLS` (electricity, gas, water, municipal taxes) and transfers to `TRANSFERS` aliases (expensas, cleaning). Their bills (and home insurance and bank invoices due) are read | Pagar for bills, Pagado for payments |
+| 📱 Servicios | Payments to `SERVICES` phone, internet and TV bills (read as Pagar). Digital services (streaming, music, games, apps, cloud, AI): their receipts, ARS or USD, credit card charges skipped | Pagado |
 | 🩺 Salud | `PREPAGAS` (health insurance), paid by automatic debit | Pagado |
 | 💳 Tarjetas | `CREDIT_CARDS` (credit card statements only, not account statements: one row per balance, ARS and USD) | Pagar |
 | 🚕 Transporte | Uber, Cabify | Pagado |
@@ -44,8 +44,8 @@ One tab per month (`2026-11`). With the default categories, the columns are
 - `Vencimiento`: due date for bills and statements.
 - `Estado`: Pagar / Pagado dropdown. Card statements and due notices come in
   as Pagar; switch them by hand once paid.
-- Payments: house and phone/internet bills are paid through a wallet, so their
-  bills are ignored and only what was actually paid is added. Each payment or
+- Payments: house and phone/internet bills come in as Pagar. Many services send
+  no payment confirmation, so mark them Pagado by hand. Each payment or
   transfer confirmation from a `PAYMENTS` sender ("Pago aprobado en X",
   "Transferiste a X") is a Pagado row named after the payee, in the category of
   the recipient's alias if it's in `TRANSFERS`, or of a known sender with the
@@ -115,8 +115,9 @@ page where something has to be done by hand:
 
 It can be run again at any time: it skips what's already done.
 
-After that, every change goes up with `./deploy.sh` (`clasp push`, then it
-opens the project). To process right away, run `run()` from the editor.
+After that, every change goes up with `./deploy.sh` (it signs `clasp` in as
+`CLASP_ACCOUNT` from `.env` if needed, runs `clasp push` and opens the
+project). Copy `.env.example` to `.env` first. To process right away, run `run()` from the editor.
 
 > ⚠️ Edit locally, not in the web editor: `clasp push` overwrites whatever
 > was changed there.

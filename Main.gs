@@ -127,7 +127,6 @@ function scanMessages(labeledSince, handle, deadline = Infinity) {
   const isKnown = (from) => known.some((source) => sameName(from, source.from));
   // `anySender` last, so the known senders claim their emails first
   const scanned = sources()
-    .filter((source) => !source.viaPayments)
     .sort((a, b) => Boolean(a.anySender) - Boolean(b.anySender));
 
   scanned.forEach((source) => {
@@ -200,14 +199,11 @@ function sources() {
       if (source.reroute && !CATEGORIES[source.reroute.category]) {
         fail(`unknown reroute category "${source.reroute.category}"`);
       }
-      // Never scanned: only used to categorize payments
-      if (!source.viaPayments) {
-        if (!source.subject) fail('missing subject pattern');
-        if (!source.amount && !source.usd && !source.items) fail('missing amount pattern');
-        if (source.items && !source.items.global) fail('items pattern needs the g flag');
-        if (!source.status) fail('missing status');
-        if (source.anySender && !source.query) fail('missing query');
-      }
+      if (!source.subject) fail('missing subject pattern');
+      if (!source.amount && !source.usd && !source.items) fail('missing amount pattern');
+      if (source.items && !source.items.global) fail('items pattern needs the g flag');
+      if (!source.status) fail('missing status');
+      if (source.anySender && !source.query) fail('missing query');
       result.push(source);
     });
   });
