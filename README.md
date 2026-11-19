@@ -10,7 +10,7 @@ It only reads the email body, never PDF attachments.
 
 | Column | Senders | Estado |
 |---|---|---|
-| 🏠 Hogar | Payments to `BILLS` (electricity, gas, water, municipal taxes) and transfers to `TRANSFERS` aliases (expensas, cleaning). Their bills (and home insurance and bank invoices due) are read | Pagar for bills, Pagado for payments |
+| 🏠 Hogar | Payments to `BILLS` (electricity, gas, water, municipal taxes). Their bills (and home insurance and bank invoices due) are read | Pagar for bills, Pagado for payments |
 | 📱 Servicios | Payments to `SERVICES` phone, internet and TV bills (read as Pagar). Digital services (streaming, music, games, apps, cloud, AI): their receipts, ARS or USD, credit card charges skipped | Pagado |
 | 🩺 Salud | `PREPAGAS` (health insurance), paid by automatic debit | Pagado |
 | 💳 Tarjetas | `CREDIT_CARDS` (credit card statements only, not account statements: one row per balance, ARS and USD) | Pagar |
@@ -48,7 +48,7 @@ One tab per month (`2026-11`). With the default categories, the columns are
   no payment confirmation, so mark them Pagado by hand. Each payment or
   transfer confirmation from a `PAYMENTS` sender ("Pago aprobado en X",
   "Transferiste a X") is a Pagado row named after the payee, in the category of
-  the recipient's alias if it's in `TRANSFERS`, or of a known sender with the
+  a known sender with the
   payee's name (`Hogar` for a utility), or `Compras` if none. An email listing
   invoices due gives one Pagar row per invoice, named and categorized the same
   way (`Hogar` if unknown). Confirmations from any sender that isn't known (a
@@ -130,8 +130,6 @@ Every setting is explained in a comment beside it, in the file it lives in:
   and the label.
 - [Categories.gs](Categories.gs): senders, categories and their patterns.
   To add a category, add a key to `CATEGORIES`.
-- `Transfers.gs`: the aliases you transfer to and their category (template:
-  [Transfers.example.gs](Transfers.example.gs)).
 
 Only IDs go in Script Properties.
 

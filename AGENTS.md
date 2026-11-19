@@ -12,11 +12,9 @@ local senders. Only the email body is read, never attachments.
 | `Main.gs` | `install()` (trigger), `run()`, `dryRun()`, `scanMessages()`, `sources()` |
 | `Config.gs` | Hand-edited settings: `RUN_EVERY_HOURS`, `DRY_RUN_*`, `USD_RATE`, `LABEL` |
 | `Categories.gs` | Hand-edited senders, `CATEGORIES` (one sheet column each), `PAYMENTS`, generic patterns |
-| `Parse.gs` | `parseMessage()`, amount/date parsing, alias lookup, DolarApi rate |
+| `Parse.gs` | `parseMessage()`, amount/date parsing, DolarApi rate |
 | `Sheet.gs` | Monthly tab writing, headers matched by name, `TOTAL` row |
 | `Gmail.gs` | Gmail search and per-message labeling (advanced Gmail service) |
-| `Transfers.gs` | Personal transfer aliases → category. Git-ignored |
-| `Transfers.example.gs` | Template for it; `.claspignore` keeps it out of Apps Script |
 | `setup.sh` | Guided install: clasp, project, push, then opens each browser step |
 | `deploy.sh` | `login.sh`, then `clasp push` and opening the project in the browser |
 | `login.sh` | Signs clasp in as `CLASP_ACCOUNT` from `.env` (git-ignored; template `.env.example`) |
@@ -40,16 +38,15 @@ local senders. Only the email body is read, never attachments.
   with the rate in a cell note. A statement with both balances gives 2 rows.
 - Bills of `BILLS` / phone services are read as `BILL_PATTERNS`: a Pagar row
   with the due date, marked Pagado by hand. A payment confirmation is a separate
-  Pagado row, named after the payee and categorized by alias (`TRANSFERS`),
-  known sender name, or `PAYMENTS.category`.
+  Pagado row, named after the payee and categorized by known sender name,
+  or `PAYMENTS.category`.
   Brubank's invoices due work the same way, one Pagar row each (`items`).
 - `dryRun()` logs `OK` / `REVIEW` / `SKIP` / `IGNORED` per email without
   touching the sheet or labels: the way to test pattern changes.
 
 ## Personal data — never commit or publish
 
-- `.clasp.json` (scriptId), `.env` (account) and `Transfers.gs` (real
-  aliases): git-ignored.
+- `.clasp.json` (scriptId) and `.env` (account): git-ignored.
   `/commit` stops if either shows up.
 - `FILE_ID` (the sheet's ID) lives only in Script Properties.
 - `.gas-sync/` and `jsconfig.json` (VS Code Apps Script autocomplete) are

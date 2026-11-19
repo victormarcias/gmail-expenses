@@ -83,8 +83,7 @@ const BILL_PATTERNS = {
 };
 
 // The house's essentials: electricity, gas, water, municipal taxes. Their
-// bills are read as BILL_PATTERNS. Expensas and cleaning are paid by transfer:
-// their aliases go in TRANSFERS (Transfers.gs).
+// bills are read as BILL_PATTERNS.
 const BILLS = [
   ...[
     // Electricity
@@ -255,8 +254,8 @@ const CATEGORIES = {
 // Payment and transfer confirmations, from any wallet or homebanking ("Pago
 // aprobado en X", "Pagaste tu factura de X", "Transferiste a X"). They're not
 // a column: each one is a Pagado row named after the `payee` (or the
-// subject), in the category of the recipient's alias (TRANSFERS, in
-// Transfers.gs) or of a known sender with that name, or `category` if none.
+// subject), in the category of a known sender with that name, or `category`
+// if none.
 // Paid by credit card (skipIf), it adds nothing: it's already in the
 // statement. Entries accept the same overrides as any category's, `category`
 // included.

@@ -63,19 +63,7 @@ info "Turn on \"Google Apps Script API\" (clasp needs it to upload code)."
 open_url "https://script.google.com/home/usersettings"
 pause
 
-# 2. Transfer aliases ----------------------------------------------------------
-
-step "Transfer aliases (optional)"
-if [[ -f Transfers.gs ]]; then
-  info "Transfers.gs already exists."
-else
-  cp Transfers.example.gs Transfers.gs
-  info "Created Transfers.gs (git-ignored). Add the aliases you transfer to"
-  info "and their category; without any, transfers go to Compras."
-  pause
-fi
-
-# 3. Apps Script project -------------------------------------------------------
+# 2. Apps Script project -------------------------------------------------------
 
 step "Apps Script project"
 if [[ -f .clasp.json ]]; then
@@ -101,7 +89,7 @@ fi
 info "Uploading the code…"
 clasp push --force
 
-# 4. The sheet -----------------------------------------------------------------
+# 3. The sheet -----------------------------------------------------------------
 
 step "Google Sheet"
 info "Create a sheet (or use an existing one), and set"
@@ -118,7 +106,7 @@ copy "$file_id"
 open_url "https://script.google.com/home/projects/$(script_id)/settings"
 pause
 
-# 5. The trigger ---------------------------------------------------------------
+# 4. The trigger ---------------------------------------------------------------
 
 step "Trigger"
 info "In the editor, pick install in the function menu, click Run and"

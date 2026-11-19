@@ -175,12 +175,6 @@ function sources() {
   if (!CATEGORIES[PAYMENTS.category]) {
     throw new Error(`PAYMENTS: unknown category "${PAYMENTS.category}".`);
   }
-  const aliases = transfers();
-  Object.keys(aliases).forEach((alias) => {
-    if (!CATEGORIES[aliases[alias]]) {
-      throw new Error(`TRANSFERS / ${alias}: unknown category "${aliases[alias]}".`);
-    }
-  });
   const groups = Object.keys(CATEGORIES).map((category) => ({ ...CATEGORIES[category], category, group: category }));
   // Payments last: a wallet can also send card statements
   groups.push({ ...PAYMENTS, payment: true, group: 'PAYMENTS' });

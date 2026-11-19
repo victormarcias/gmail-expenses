@@ -1,5 +1,5 @@
 // Gmail Expenses: configuration. Senders, categories and their patterns are
-// in Categories.gs; transfer aliases, in Transfers.gs.
+// in Categories.gs.
 // author: @victormarcias
 //
 // Everything here is meant to be edited by hand. IDs (the spreadsheet's

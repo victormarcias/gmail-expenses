@@ -27,7 +27,7 @@ function parseMessage(source, message) {
       .map(({ match, ars }) => ({
         date: message.getDate(),
         detail: match[1].trim(),
-        category: aliasCategory(match[1]) || categoryOf(match[1]) || source.category,
+        category: categoryOf(match[1]) || source.category,
         due: parseDate(match[3]),
         status: source.status,
         ars: round2(ars),
@@ -55,7 +55,7 @@ function parseMessage(source, message) {
     const payee = source.payee && firstMatch(source.payee, subject);
     // Any sender: its name says more than a generic subject ("Pago aprobado")
     base.detail = payee || (source.anySender && senderName(message)) || subject;
-    base.category = aliasCategory(`${subject} ${body}`) || categoryOf(base.detail) || source.category;
+    base.category = categoryOf(base.detail) || source.category;
   }
   const rows = [];
 
@@ -89,18 +89,6 @@ function isAdjustedReceipt(message) {
     const gap = date - other.getDate().getTime();
     return gap > 0 && gap < limit;
   });
-}
-
-// The category of the first transfer alias that appears in `text`, or null
-function aliasCategory(text) {
-  const aliases = transfers();
-  const alias = Object.keys(aliases).find((name) => sameName(text, name));
-  return alias ? aliases[alias] : null;
-}
-
-// TRANSFERS lives in Transfers.gs, which is git-ignored and may not exist
-function transfers() {
-  return typeof TRANSFERS === 'undefined' ? {} : TRANSFERS;
 }
 
 // The category of the first non-payment sender whose name is in `text`
