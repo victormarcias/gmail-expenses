@@ -75,12 +75,12 @@ else
   else
     # create-script overwrites appsscript.json and pulls a sample Code.js
     manifest=$(mktemp)
-    cp appsscript.json "$manifest"
+    cp source/appsscript.json "$manifest"
     created=true
     clasp create-script --type standalone --title "Gmail Expenses" \
-      --rootDir . || created=false
-    mv "$manifest" appsscript.json
-    rm -f Code.js
+      --rootDir source || created=false
+    mv "$manifest" source/appsscript.json
+    rm -f source/Code.js
     $created || fail "clasp couldn't create the project."
   fi
   info "Linked to $(script_id)."

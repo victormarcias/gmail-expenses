@@ -9,16 +9,16 @@ local senders. Only the email body is read, never attachments.
 
 | File | What it holds |
 |---|---|
-| `Main.gs` | `install()` (trigger), `run()`, `dryRun()`, `scanMessages()`, `sources()` |
-| `Config.gs` | Hand-edited settings: `RUN_EVERY_HOURS`, `DRY_RUN_*`, `USD_RATE`, `LABEL` |
-| `Categories.gs` | Hand-edited senders, `CATEGORIES` (one sheet column each), `PAYMENTS`, generic patterns |
-| `Parse.gs` | `parseMessage()`, amount/date parsing, DolarApi rate |
-| `Sheet.gs` | Monthly tab writing, headers matched by name, `TOTAL` row |
-| `Gmail.gs` | Gmail search and per-message labeling (advanced Gmail service) |
+| `source/Main.gs` | `install()` (trigger), `run()`, `dryRun()`, `scanMessages()`, `sources()` |
+| `source/Config.gs` | Hand-edited settings: `RUN_EVERY_HOURS`, `DRY_RUN_*`, `USD_RATE`, `LABEL` |
+| `source/Categories.gs` | Hand-edited senders, `CATEGORIES` (one sheet column each), `PAYMENTS`, generic patterns |
+| `source/Parse.gs` | `parseMessage()`, amount/date parsing, DolarApi rate |
+| `source/Sheet.gs` | Monthly tab writing, headers matched by name, `TOTAL` row |
+| `source/Gmail.gs` | Gmail search and per-message labeling (advanced Gmail service) |
 | `setup.sh` | Guided install: clasp, project, push, then opens each browser step |
 | `deploy.sh` | `login.sh`, then `clasp push` and opening the project in the browser |
 | `login.sh` | Signs clasp in as `CLASP_ACCOUNT` from `.env` (git-ignored; template `.env.example`) |
-| `appsscript.json` | Time zone (Buenos Aires), Gmail advanced service, V8 |
+| `source/appsscript.json` | Time zone (Buenos Aires), Gmail advanced service, V8 |
 | `images/` | README screenshots |
 
 ## How it works
@@ -70,9 +70,9 @@ local senders. Only the email body is read, never attachments.
   re-runnable: each step skips itself when done. It avoids leaving
   `clasp create-script`'s overwritten `appsscript.json` and sample `Code.js`.
   Keep README's Setup in step with it.
-- Deploy: `./deploy.sh` or `clasp push` (only `*.gs` and `appsscript.json` go
-  up, per `.claspignore`). The user runs it; editing in the web editor and
-  locally at once makes one overwrite the other.
+- Deploy: `./deploy.sh` or `clasp push` (`rootDir` is `source/`; only its
+  `*.gs` and `appsscript.json` go up, per `.claspignore`). The user runs it;
+  editing in the web editor and locally at once makes one overwrite the other.
 - No test suite. Static check: copy a `.gs` to `.js` in the scratchpad and
   run `node --check` on it. Real behavior is checked by the user with
   `dryRun()`.

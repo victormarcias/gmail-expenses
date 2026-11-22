@@ -126,9 +126,9 @@ project). Copy `.env.example` to `.env` first. To process right away, run `run()
 
 Every setting is explained in a comment beside it, in the file it lives in:
 
-- [Config.gs](Config.gs): run interval, `dryRun()` options, the dollar rate
+- [Config.gs](source/Config.gs): run interval, `dryRun()` options, the dollar rate
   and the label.
-- [Categories.gs](Categories.gs): senders, categories and their patterns.
+- [Categories.gs](source/Categories.gs): senders, categories and their patterns.
   To add a category, add a key to `CATEGORIES`.
 
 Only IDs go in Script Properties.
