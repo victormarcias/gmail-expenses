@@ -20,6 +20,7 @@ local senders. Only the email body is read, never attachments.
 | `login.sh` | Signs clasp in as `CLASP_ACCOUNT` from `.env` (git-ignored; template `.env.example`) |
 | `source/appsscript.json` | Time zone (Buenos Aires), Gmail advanced service, V8 |
 | `images/` | README screenshots |
+| `CHANGELOG.md` | Keep a Changelog, Unreleased promoted monthly (`.es.md` mirrors it) |
 
 ## How it works
 
@@ -76,4 +77,8 @@ local senders. Only the email body is read, never attachments.
 - No test suite. Static check: copy a `.gs` to `.js` in the scratchpad and
   run `node --check` on it. Real behavior is checked by the user with
   `dryRun()`.
+- Releases are monthly, versioned `<years since 2026>.<month>.<patch>`
+  (0.11.0 is 2026-11, 1.1.0 is 2027-01); an extra release in the same month
+  bumps the patch. Pass the version to `/release` explicitly. Write each
+  change under `[Unreleased]` in both changelogs as the work happens.
 - `AGENTS.md` may be staged with `git add` once checked for sensitive data.
