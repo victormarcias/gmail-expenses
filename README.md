@@ -61,8 +61,8 @@ One tab per month (`2026-11`). With the default categories, the columns are
 
 ## Emails
 
-- Every handled email is labeled `Gmail Expenses` and left in the inbox.
-  Delete them once they're in the sheet.
+- Every handled email is labeled `Gmail Expenses`, marked as read and left in
+  the inbox. Delete them once they're in the sheet.
 - If the amount couldn't be read, it's labeled all the same, with no row: the
   reason is only in the run's log (*Executions* in the Apps Script editor).
   After fixing the patterns, remove the label and the next run picks it up

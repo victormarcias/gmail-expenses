@@ -36,10 +36,14 @@ function messageHeaders(id) {
   return { from: header('from'), subject: header('subject') };
 }
 
+// Adds the label and marks the messages as read
 function markMessages(ids, id) {
   // batchModify takes up to 1000 ids
   for (let i = 0; i < ids.length; i += 1000) {
-    Gmail.Users.Messages.batchModify({ ids: ids.slice(i, i + 1000), addLabelIds: [id] }, 'me');
+    Gmail.Users.Messages.batchModify(
+      { ids: ids.slice(i, i + 1000), addLabelIds: [id], removeLabelIds: ['UNREAD'] },
+      'me'
+    );
   }
 }
 
