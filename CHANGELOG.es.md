@@ -11,6 +11,11 @@ Las versiones son `<años desde 2026>.<mes>.<parche>`: 0.11.0 es noviembre de
 
 ## [Unreleased]
 
+### Agregado
+
+- **Proyecto:** logo al inicio del README y un `README.es.md` en
+  español.
+
 ### Cambiado
 
 - **Gmail:** los mails procesados se marcan como leídos junto con el label.

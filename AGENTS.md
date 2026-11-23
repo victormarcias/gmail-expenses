@@ -19,7 +19,7 @@ local senders. Only the email body is read, never attachments.
 | `deploy.sh` | `login.sh`, then `clasp push` and opening the project in the browser |
 | `login.sh` | Signs clasp in as `CLASP_ACCOUNT` from `.env` (git-ignored; template `.env.example`) |
 | `source/appsscript.json` | Time zone (Buenos Aires), Gmail advanced service, V8 |
-| `images/` | README screenshots |
+| `images/` | README logo and screenshots |
 | `CHANGELOG.md` | Keep a Changelog, Unreleased promoted monthly (`.es.md` mirrors it) |
 
 ## How it works
@@ -60,7 +60,7 @@ local senders. Only the email body is read, never attachments.
 - README: light to read. Don't repeat in it what the code comments already
   explain; point to the file instead. It covers what the tool detects, the
   sheet, the emails, setup and testing. `#` title, `##` sections, `###`
-  subsections. There's no Spanish `README.es.md`.
+  subsections. `README.es.md` mirrors it.
 - Screenshots: save to `images/<kebab-name>.png`, shrunk to 50% and with
   anything sensitive (IDs, emails, background fragments) pixelated then
   blurred, so it can't be recovered (Pillow is installed). The original in

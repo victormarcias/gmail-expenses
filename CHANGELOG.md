@@ -10,6 +10,11 @@ and 1.1.0 is January 2027. An extra release within a month bumps the patch.
 
 ## [Unreleased]
 
+### Added
+
+- **Project:** logo at the top of the README, and a Spanish
+  `README.es.md`.
+
 ### Changed
 
 - **Gmail:** handled emails are marked as read along with the label.

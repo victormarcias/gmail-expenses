@@ -1,4 +1,10 @@
+<p align="center">
+  <img src="images/logo.png" alt="Gmail Expenses" width="240">
+</p>
+
 # Gmail Expenses
+
+[Español](README.es.md)
 
 📧 Google Apps Script that reads expense emails from Gmail every hour and
 writes them into a Google Sheet, one row per transaction. Made for Argentina:
