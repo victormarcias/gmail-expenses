@@ -91,10 +91,18 @@ const BILLS = [
     // Gas
     'Ecogas', 'Metrogas', 'Naturgy', 'Camuzzi', 'Litoral Gas',
     // Water
-    'AYSAM', 'AySA', 'Aguas Cordobesas', 'ABSA',
+    'AySA', 'Aguas Cordobesas', 'ABSA',
     // Taxes
     'Municipio',
   ].map((name) => ({ name, ...BILL_PATTERNS })),
+  // Water in installments: one row per installment, named "CUOTA 1", with its
+  // own due date. `items` is global: name, amount, due date.
+  {
+    name: 'AYSAM',
+    from: 'aysam.com.ar',
+    ...BILL_PATTERNS,
+    items: /(CUOTA \d+):\s*\$\s*([\d.,]+)\s*VTO:\s*(\d{1,2}\/\d{1,2}\/\d{2,4})/gi,
+  },
   // Home insurance: only its due notice counts.
   {
     name: 'La Segunda',

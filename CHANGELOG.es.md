@@ -21,6 +21,7 @@ Las versiones son `<años desde 2026>.<mes>.<parche>`: 0.11.0 es noviembre de
 - **Gmail:** los mails procesados se marcan como leídos junto con el label.
 - **Pagos:** se saltean las confirmaciones de Pagomiscuentas: la factura ya
   es una fila.
+- **Facturas:** las facturas en cuotas de AYSAM dan una fila Pagar por cuota.
 - **Proyecto:** el código de Apps Script vive en `source/`, que es lo que
   sube `clasp push`.
 
