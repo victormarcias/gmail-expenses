@@ -51,7 +51,10 @@ else
   npm install -g @google/clasp
 fi
 
-if [[ -f ~/.clasprc.json ]]; then
+# Its own named clasp user, so other projects' sessions are left alone
+clasp() { command clasp --user gmail-expenses "$@"; }
+
+if clasp show-authorized-user 2>&1 | grep -q 'logged in as'; then
   info "Already logged in."
 else
   info "Log in with the Google account whose Gmail will be read."

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Gmail Expenses: makes sure clasp is signed in as the account in .env
-# (CLASP_ACCOUNT), and logs out and in again when it isn't.
+# (CLASP_ACCOUNT), and logs out and in again when it isn't. It uses its own
+# named clasp user, so other projects' sessions are left alone.
 # author: @victormarcias
 #
 # Usage: ./login.sh   (deploy.sh runs it first)
@@ -13,6 +14,8 @@ cd "$(dirname "$0")"
   exit 1
 }
 set -a; source .env; set +a
+
+clasp() { command clasp --user gmail-expenses "$@"; }
 : "${CLASP_ACCOUNT:?✖ CLASP_ACCOUNT is empty in .env}"
 
 signed_in_as() {

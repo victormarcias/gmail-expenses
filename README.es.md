@@ -125,9 +125,9 @@ página donde hay que hacer algo a mano:
 
 Se puede correr de nuevo en cualquier momento: saltea lo que ya está hecho.
 
-Después, cada cambio sube con `./deploy.sh` (inicia sesión de `clasp` como
-`CLASP_ACCOUNT` de `.env` si hace falta, corre `clasp push` y abre el
-proyecto). Antes copiá `.env.example` a `.env`. Para procesar de inmediato,
+Después, cada cambio sube con `./deploy.sh` (inicia sesión de su propio
+usuario de `clasp` como `CLASP_ACCOUNT` de `.env` si hace falta, corre
+`clasp push` y abre el proyecto). Antes copiá `.env.example` a `.env`. Para procesar de inmediato,
 corré `run()` desde el editor.
 
 > ⚠️ Editá en local, no en el editor web: `clasp push` pisa lo que se haya

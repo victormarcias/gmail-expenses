@@ -121,9 +121,10 @@ page where something has to be done by hand:
 
 It can be run again at any time: it skips what's already done.
 
-After that, every change goes up with `./deploy.sh` (it signs `clasp` in as
-`CLASP_ACCOUNT` from `.env` if needed, runs `clasp push` and opens the
-project). Copy `.env.example` to `.env` first. To process right away, run `run()` from the editor.
+After that, every change goes up with `./deploy.sh` (it signs its own `clasp`
+user in as `CLASP_ACCOUNT` from `.env` if needed, runs `clasp push` and opens
+the project). Copy `.env.example` to `.env` first. To process right away, run
+`run()` from the editor.
 
 > ⚠️ Edit locally, not in the web editor: `clasp push` overwrites whatever
 > was changed there.

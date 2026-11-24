@@ -10,6 +10,8 @@ cd "$(dirname "$0")"
 
 command -v clasp >/dev/null || { echo "✖ clasp is missing: run ./setup.sh" >&2; exit 1; }
 
+clasp() { command clasp --user gmail-expenses "$@"; }
+
 ./login.sh
 clasp push --force
 clasp open-script
