@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 24px 16px; font: 18px -apple-system, system-ui, sans-serif;
+      background: #f4f4f5; color: #18181b;
+    }
+    main { max-width: 420px; margin: 0 auto; display: grid; gap: 14px; }
+    select, input, button {
+      width: 100%; padding: 16px; font: inherit; border-radius: 12px;
+      border: 1px solid #d4d4d8; background: #fff; color: inherit;
+    }
+    button { background: #18181b; color: #fff; border: 0; font-weight: 600; }
+    button:disabled { opacity: .5; }
+    #install { background: none; color: #52525b; border: 0; font-weight: 400; padding: 8px; }
+    .logo { display: block; width: 211px; max-width: 100%; margin: 0 auto; }
+    #msg { text-align: center; min-height: 1.4em; }
+    .ok { color: #15803d; } .err { color: #b91c1c; }
+  </style>
+</head>
+<body>
+  <main>
+    <img class="logo" src="<?= logoUrl ?>" alt="Gmail Expenses">
+    <select id="category" aria-label="Categoría"></select>
+    <input id="detail" value="Manual" placeholder="Detalle" autocomplete="off"
+           aria-label="Detalle">
+    <input id="amount" inputmode="numeric" placeholder="Precio" autocomplete="off"
+           aria-label="Precio">
+    <button id="add" disabled>Agregar</button>
+    <div id="msg"></div>
+    <button id="install" type="button">Agregar a Inicio</button>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const select = $('category'), detail = $('detail'), amount = $('amount'), add = $('add'), msg = $('msg');
+
+    // No web page can add itself to the home screen: the browser's own menu
+    // does it, so the button says where that menu is.
+    const standalone = navigator.standalone ||
+      (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+    if (standalone) $('install').hidden = true;
+
+    $('install').addEventListener('click', () => {
+      const ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
+      const android = /Android/.test(navigator.userAgent);
+      show(ios
+        ? 'Tocá Compartir (⬆︎) y elegí «Agregar a pantalla de inicio»'
+        : android
+          ? 'Tocá el menú (⋮) y elegí «Agregar a pantalla de inicio»'
+          : 'Abrí este link en el celular y agregalo a la pantalla de inicio');
+    });
+
+    function show(text, kind) { msg.textContent = text; msg.className = kind || ''; }
+
+    // Whole pesos only: the field keeps the digits and shows them as a price
+    const digitsOf = (text) => text.replace(/\D/g, '').replace(/^0+/, '');
+
+    amount.addEventListener('input', () => {
+      const digits = digitsOf(amount.value);
+      amount.value = digits
+        ? '$ ' + digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+        : '';
+    });
+
+    // Calls `then` once the automatic run is not holding the sheet, checking
+    // every 3 seconds and saying why it waits.
+    function whenFree(then) {
+      google.script.run
+        .withSuccessHandler((busy) => {
+          if (!busy) return then();
+          show('Corrida automática en curso…');
+          setTimeout(() => whenFree(then), 3000);
+        })
+        .withFailureHandler((e) => { add.disabled = false; show(e.message, 'err'); })
+        .isAutoRunning();
+    }
+
+    google.script.run
+      .withSuccessHandler((categories) => {
+        select.innerHTML = categories.map((c) => `<option>${c}</option>`).join('');
+        const last = localStorage.getItem('category');
+        if (last && categories.includes(last)) select.value = last;
+        add.disabled = false;
+      })
+      .withFailureHandler((e) => show(e.message, 'err'))
+      .getCategories();
+
+    add.addEventListener('click', () => {
+      const value = parseInt(digitsOf(amount.value) || '0', 10);
+      if (!(value > 0)) return show('Poné un precio', 'err');
+      add.disabled = true;
+      show('Agregando…');
+      whenFree(() => {
+        show('Agregando…');
+        google.script.run
+          .withSuccessHandler(() => {
+            localStorage.setItem('category', select.value);
+            amount.value = '';
+          detail.value = 'Manual';
+            add.disabled = false;
+            show('✓ Agregado', 'ok');
+          })
+          .withFailureHandler((e) => {
+            add.disabled = false;
+            show(e.message, 'err');
+          })
+          .addExpense(select.value, value, detail.value);
+      });
+    });
+  </script>
+</body>
+</html>

@@ -94,6 +94,28 @@ tiendas online, el streaming y los pagos ya saltean los cargos de tarjeta de
 crédito por esta razón (`CREDIT_CARD`, cuando el mail lo dice); el resto no,
 porque se asume que se pagan con débito o dinero en cuenta.
 
+## Agregar un gasto a mano
+
+[WebAppPage.html](source/WebAppPage.html) es una página de una pantalla:
+elegís la categoría, escribís el precio y tocás Agregar. Escribe una fila
+`Pagado` en la pestaña del mes actual, con el campo Detalle como detalle
+(`Manual` si no se edita). Mientras la corrida automática escanea, la página
+muestra "Corrida automática en curso…" y agrega la fila cuando termina.
+
+La sirve el propio script como web app que solo su dueño puede abrir, así que
+el inicio de sesión de Google es la única autenticación. Para abrirla en el
+celular:
+
+1. Corré `./webapp.sh`. Sube el código, crea la web app y copia su URL
+   (termina en `/exec`).
+2. Mandá la URL al celular (AirDrop, una nota, un mensaje a vos mismo).
+3. Abrila en Safari o Chrome e iniciá sesión en Google una sola vez.
+4. *Compartir → Agregar a pantalla de inicio* (el botón *Agregar a Inicio* de
+   la página dice dónde): se abre como una app, ya con la sesión iniciada.
+
+Después de un cambio en la página, corré `./webapp.sh` de nuevo: publica una
+versión nueva y la URL no cambia.
+
 ## Instalación
 
 Necesita [Node.js](https://nodejs.org). Desde el repo, corré:

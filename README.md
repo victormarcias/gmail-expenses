@@ -90,6 +90,27 @@ payments already skip credit card charges for this reason (`CREDIT_CARD`, when
 the email says so); the rest don't, since they're assumed to be paid with debit
 or account money.
 
+## Adding an expense by hand
+
+[WebAppPage.html](source/WebAppPage.html) is a one-screen page: pick a
+category, type the price and tap Add. It writes a `Pagado` row into the
+current month's tab, with the Detalle field as its detail (`Manual` unless
+edited). While the automatic run is scanning, the page shows "Corrida
+automática en curso…" and adds the row when it ends.
+
+It is served by the script itself as a web app only its owner can open, so
+Google's sign-in is the only authentication. To open it on the phone:
+
+1. Run `./webapp.sh`. It uploads the code, creates the web app and copies its
+   URL (it ends in `/exec`).
+2. Send the URL to the phone (AirDrop, a note, a message to yourself).
+3. Open it in Safari or Chrome and sign in to Google once.
+4. *Share → Add to Home Screen* (the page's *Agregar a Inicio* button says
+   where): it opens like an app, already signed in.
+
+After a change to the page, run `./webapp.sh` again: it publishes a new
+version and the URL stays the same.
+
 ## Setup
 
 Needs [Node.js](https://nodejs.org). From the repo, run:

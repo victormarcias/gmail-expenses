@@ -15,7 +15,10 @@ local senders. Only the email body is read, never attachments.
 | `source/Parse.gs` | `parseMessage()`, amount/date parsing, DolarApi rate |
 | `source/Sheet.gs` | Monthly tab writing, headers matched by name, `TOTAL` row |
 | `source/Gmail.gs` | Gmail search and per-message labeling (advanced Gmail service) |
+| `source/WebApp.gs` | `doGet()` serves `WebAppPage.html`; `addExpense()` writes a manual row |
+| `source/WebAppPage.html` | Manual entry page: category, detail, price, Add |
 | `setup.sh` | Guided install: clasp, project, push, then opens each browser step |
+| `webapp.sh` | Deploys the web app (creates it, or moves it to a new version) and prints its URL |
 | `deploy.sh` | `login.sh`, then `clasp push` and opening the project in the browser |
 | `login.sh` | Signs clasp in as `CLASP_ACCOUNT` from `.env` (git-ignored; template `.env.example`) |
 | `source/appsscript.json` | Time zone (Buenos Aires), Gmail advanced service, V8 |
@@ -72,8 +75,9 @@ local senders. Only the email body is read, never attachments.
   `clasp create-script`'s overwritten `appsscript.json` and sample `Code.js`.
   Keep README's Setup in step with it.
 - Deploy: `./deploy.sh` or `clasp push` (`rootDir` is `source/`; only its
-  `*.gs` and `appsscript.json` go up, per `.claspignore`). The user runs it;
-  editing in the web editor and locally at once makes one overwrite the other.
+  `*.gs`, `*.html` and `appsscript.json` go up, per `.claspignore`). The
+  user runs it; editing in the web editor and locally at once makes one
+  overwrite the other. The web app goes up with `./webapp.sh`.
 - No test suite. Static check: copy a `.gs` to `.js` in the scratchpad and
   run `node --check` on it. Real behavior is checked by the user with
   `dryRun()`.
