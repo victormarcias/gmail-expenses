@@ -4,7 +4,7 @@
 # named clasp user, so other projects' sessions are left alone.
 # author: @victormarcias
 #
-# Usage: ./login.sh   (deploy.sh runs it first)
+# Usage: ./login.sh   (deploy-script.sh runs it first)
 
 set -euo pipefail
 cd "$(dirname "$0")"

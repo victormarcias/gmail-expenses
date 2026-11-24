@@ -3,7 +3,7 @@
 # project in the browser, to run dryRun() there.
 # author: @victormarcias
 #
-# Usage: ./deploy.sh
+# Usage: ./deploy-script.sh
 
 set -euo pipefail
 cd "$(dirname "$0")"

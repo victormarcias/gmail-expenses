@@ -4,7 +4,8 @@
 # a new version, so the URL never changes. Prints the URL and copies it.
 # author: @victormarcias
 #
-# Usage: ./webapp.sh   (run it again after every change to the web app files)
+# Usage: ./deploy-webapp.sh
+# Run it again after every change to the web app files.
 
 set -euo pipefail
 cd "$(dirname "$0")"
