@@ -7,7 +7,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <style>
     * { box-sizing: border-box; }
+    html { height: 100%; overflow: hidden; overscroll-behavior: none; }
     body {
+      height: 100dvh; overflow: hidden; overscroll-behavior: none;
+      touch-action: manipulation;
       margin: 0; padding: 24px 16px; font: 18px -apple-system, system-ui, sans-serif;
       background: #f4f4f5; color: #18181b;
     }
@@ -18,9 +21,51 @@
     }
     button { background: #18181b; color: #fff; border: 0; font-weight: 600; }
     button:disabled { opacity: .5; }
+    #add { transition: background-color .3s ease, transform .15s ease; }
+    #add:active { transform: scale(.98); }
+    #add[data-state] { opacity: 1; }
+    #add[data-state="loading"] { background: #52525b; }
+    #add[data-state="done"] { background: #15803d; }
+    #add .state { display: inline-flex; align-items: center; gap: .4em;
+                  animation: swap .25s ease; }
+    @keyframes swap { from { opacity: 0; transform: translateY(6px); } }
+    #add svg { width: 1.3em; height: 1.3em; animation: pop .35s cubic-bezier(.2, 1.6, .4, 1); }
+    @keyframes pop { from { transform: scale(0); } }
+    .dots i { display: inline-block; width: .3em; height: .3em; margin-left: .2em;
+              border-radius: 50%; background: currentColor; animation: blink 1s infinite; }
+    .dots i:nth-child(2) { animation-delay: .15s; }
+    .dots i:nth-child(3) { animation-delay: .3s; }
+    @keyframes blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
     #install { background: none; color: #52525b; border: 0; font-weight: 400; padding: 8px; }
-    .logo { display: block; width: 211px; max-width: 100%; margin: 0 auto; }
+    /* The logo follows the screen's height, and shrinks while a field has the
+       keyboard open, pulling the form up with it */
+    .logo {
+      display: block; margin: 0 auto; width: min(211px, 26dvh);
+      transition: width .35s cubic-bezier(.2, .8, .2, 1);
+    }
+    body.typing .logo { width: min(72px, 12dvh); }
+
+    /* On load, each block rises into place one after the other */
+    main > :not(#tip) { animation: rise .45s cubic-bezier(.2, .8, .2, 1) backwards; }
+    main > :nth-child(2) { animation-delay: .05s; }
+    main > :nth-child(3) { animation-delay: .1s; }
+    main > :nth-child(4) { animation-delay: .15s; }
+    main > :nth-child(5) { animation-delay: .2s; }
+    main > :nth-child(6) { animation-delay: .25s; }
+    main > :nth-child(7) { animation-delay: .3s; }
+    @keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+    }
     #msg { text-align: center; min-height: 1.4em; }
+    #tip {
+      margin: 0; text-align: center; font-size: 14px; color: #52525b;
+      max-height: 0; opacity: 0; overflow: hidden; transform: translateY(-6px);
+      transition: max-height .3s ease, opacity .3s ease, transform .3s ease;
+    }
+    #tip svg { width: 1.2em; height: 1.2em; vertical-align: -.25em; }
+    #tip.open { max-height: 6em; opacity: 1; transform: none; }
     .ok { color: #15803d; } .err { color: #b91c1c; }
   </style>
 </head>
@@ -32,9 +77,10 @@
            aria-label="Detalle">
     <input id="amount" inputmode="numeric" placeholder="Precio" autocomplete="off"
            aria-label="Precio">
-    <button id="add" disabled>Agregar</button>
+    <button id="add" disabled><span class="state">Agregar</span></button>
     <div id="msg"></div>
     <button id="install" type="button">Agregar a Inicio</button>
+    <p id="tip"></p>
   </main>
 
   <script>
@@ -47,14 +93,61 @@
       (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
     if (standalone) $('install').hidden = true;
 
+    // Google's Material Symbols (Apache 2.0): ios_share is the iOS share icon,
+    // more_vert the Android browser menu.
+    const icon = (path) => '<svg viewBox="0 -960 960 960" fill="currentColor">' +
+      `<path d="${path}"/></svg>`;
+    const SHARE_ICON = icon('M240-40q-33 0-56.5-23.5T160-120v-440q0-33 23.5-56.5T240-640h120v80H240v440h480v-440H600v-80h120q33 0 56.5 23.5T800-560v440q0 33-23.5 56.5T720-40H240Zm200-280v-447l-64 64-56-57 160-160 160 160-56 57-64-64v447h-80Z');
+    const MENU_ICON = icon('M480-160q-33 0-56.5-23.5T400-240q0-33 23.5-56.5T480-320q33 0 56.5 23.5T560-240q0 33-23.5 56.5T480-160Zm0-240q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm0-240q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Z');
+
+    // The tip slides in under the button, and the same button hides it
     $('install').addEventListener('click', () => {
-      const ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
-      const android = /Android/.test(navigator.userAgent);
-      show(ios
-        ? 'Tocá Compartir (⬆︎) y elegí «Agregar a pantalla de inicio»'
-        : android
-          ? 'Tocá el menú (⋮) y elegí «Agregar a pantalla de inicio»'
-          : 'Abrí este link en el celular y agregalo a la pantalla de inicio');
+      const tip = $('tip');
+      if (tip.classList.toggle('open')) {
+        const ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
+        const android = /Android/.test(navigator.userAgent);
+        tip.innerHTML = ios
+          ? `Tocá Compartir ${SHARE_ICON} y elegí «Agregar a pantalla de inicio»`
+          : android
+            ? `Tocá el menú ${MENU_ICON} y elegí «Agregar a pantalla de inicio»`
+            : 'Abrí este link en el celular y agregalo a la pantalla de inicio';
+      }
+    });
+
+    // The Add button tells the story itself: Agregar → Agregando… → ✓ Agregado
+    const CHECK_ICON = icon('M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z');
+    const ADD_STATES = {
+      idle: 'Agregar',
+      loading: 'Agregando<span class="dots"><i></i><i></i><i></i></span>',
+      done: `${CHECK_ICON} Agregado`,
+    };
+    let addState = 'idle', categoriesReady = false;
+
+    // Add only works when idle, with the categories loaded and a price typed
+    function refreshAdd() {
+      add.disabled = addState !== 'idle' || !categoriesReady || !digitsOf(amount.value);
+    }
+
+    function setAdd(state) {
+      addState = state;
+      add.innerHTML = `<span class="state">${ADD_STATES[state]}</span>`;
+      if (state === 'idle') delete add.dataset.state;
+      else add.dataset.state = state;
+      refreshAdd();
+    }
+
+    // While a field is focused the keyboard is open: the layout compacts
+    const typing = (on) => document.body.classList.toggle('typing', on);
+    document.addEventListener('focusin', (e) => {
+      if (e.target.matches('input, select')) typing(true);
+    });
+    document.addEventListener('focusout', () => setTimeout(() => {
+      if (!document.activeElement.matches('input, select')) typing(false);
+    }, 100));
+
+    // A tap anywhere but a field closes the keyboard
+    document.addEventListener('pointerdown', (e) => {
+      if (!e.target.closest('input, select')) document.activeElement.blur();
     });
 
     function show(text, kind) { msg.textContent = text; msg.className = kind || ''; }
@@ -67,6 +160,7 @@
       amount.value = digits
         ? '$ ' + digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
         : '';
+      refreshAdd();
     });
 
     // Calls `then` once the automatic run is not holding the sheet, checking
@@ -78,7 +172,7 @@
           show('Corrida automática en curso…');
           setTimeout(() => whenFree(then), 3000);
         })
-        .withFailureHandler((e) => { add.disabled = false; show(e.message, 'err'); })
+        .withFailureHandler((e) => { setAdd('idle'); show(e.message, 'err'); })
         .isAutoRunning();
     }
 
@@ -87,28 +181,29 @@
         select.innerHTML = categories.map((c) => `<option>${c}</option>`).join('');
         const last = localStorage.getItem('category');
         if (last && categories.includes(last)) select.value = last;
-        add.disabled = false;
+        categoriesReady = true;
+        refreshAdd();
       })
       .withFailureHandler((e) => show(e.message, 'err'))
       .getCategories();
 
     add.addEventListener('click', () => {
       const value = parseInt(digitsOf(amount.value) || '0', 10);
-      if (!(value > 0)) return show('Poné un precio', 'err');
-      add.disabled = true;
-      show('Agregando…');
+      if (!(value > 0)) return;
+      setAdd('loading');
+      show('');
       whenFree(() => {
-        show('Agregando…');
+        show('');
         google.script.run
           .withSuccessHandler(() => {
             localStorage.setItem('category', select.value);
             amount.value = '';
-          detail.value = 'Manual';
-            add.disabled = false;
-            show('✓ Agregado', 'ok');
+            detail.value = 'Manual';
+            setAdd('done');
+            setTimeout(() => setAdd('idle'), 1800);
           })
           .withFailureHandler((e) => {
-            add.disabled = false;
+            setAdd('idle');
             show(e.message, 'err');
           })
           .addExpense(select.value, value, detail.value);
