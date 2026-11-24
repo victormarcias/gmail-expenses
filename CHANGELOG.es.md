@@ -19,8 +19,9 @@ Las versiones son `<años desde 2026>.<mes>.<parche>`: 0.11.0 es noviembre de
   del proyecto en la página y un favicon cuadrado en su pestaña.
   `deploy-webapp.sh` la instala e imprime su URL.
 - **Categorías:** `Ocio`, `Mascotas`, `Impuestos`, `Educación` y
-  `Vacaciones`, para cargas manuales. La web app las lista en orden alfabético
-  con un emoji cada una, y arranca en `Otros`.
+  `Vacaciones`, para cargas manuales. La web app las muestra como una
+  grilla de botones de colores con emoji; la elegida queda
+  presionada y su nombre se ve abajo. Al inicio no hay ninguna elegida.
 - **Proyecto:** logo al inicio del README y un `README.es.md` en
   español.
 

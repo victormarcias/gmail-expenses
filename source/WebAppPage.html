@@ -3,21 +3,40 @@
 <head>
   <base target="_top">
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <style>
     * { box-sizing: border-box; }
-    html { height: 100%; overflow: hidden; overscroll-behavior: none; }
+    html { overscroll-behavior: none; }
+    /* min-height, not height: if the content is taller than the screen the
+       page grows and scrolls, instead of being cut. The bottom padding
+       keeps clear of the iPhone's home indicator. */
     body {
-      height: 100dvh; overflow: hidden; overscroll-behavior: none;
+      min-height: 100dvh; overscroll-behavior: none;
       touch-action: manipulation;
-      margin: 0; padding: 24px 16px; font: 18px -apple-system, system-ui, sans-serif;
+      margin: 0; font: 18px -apple-system, system-ui, sans-serif;
+      padding: 24px 16px max(24px, env(safe-area-inset-bottom));
       background: #f4f4f5; color: #18181b;
     }
     main { max-width: 420px; margin: 0 auto; display: grid; gap: 14px; }
-    select, input, button {
+    input, button {
       width: 100%; padding: 16px; font: inherit; border-radius: 12px;
       border: 1px solid #d4d4d8; background: #fff; color: inherit;
     }
+    /* Category grid: one colored button per category. The chosen one stays
+       pressed (a little smaller) with a ring around it. */
+    #categories { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .cat {
+      padding: 0; border: 0; aspect-ratio: 1 / .85; font-size: 30px; line-height: 1;
+      transition: transform .15s ease, outline-offset .15s ease;
+      outline: 3px solid transparent; outline-offset: 0;
+    }
+    .cat:active, .cat[aria-pressed="true"] { transform: scale(.88); }
+    .cat[aria-pressed="true"] { outline-color: #18181b; outline-offset: 3px; }
+    #categories .loading { grid-column: 1 / -1; text-align: center;
+                           padding: 56px 0; color: #71717a; }
+    #chosen { text-align: center; font-weight: 600; min-height: 1.4em; }
+    #chosen:empty::before { content: 'Elegí una categoría'; color: #71717a;
+                            font-weight: 400; }
     button { background: #18181b; color: #fff; border: 0; font-weight: 600; }
     button:disabled { opacity: .5; }
     #add { transition: background-color .3s ease, transform .15s ease; }
@@ -36,7 +55,7 @@
     .dots i:nth-child(3) { animation-delay: .3s; }
     @keyframes blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
     /* The logo follows the screen's height */
-    .logo { display: block; margin: 0 auto; width: min(211px, 26dvh); }
+    .logo { display: block; margin: 0 auto; width: min(211px, 18dvh); }
 
     /* On load, each block rises into place one after the other */
     main > * { animation: rise .45s cubic-bezier(.2, .8, .2, 1) backwards; }
@@ -45,6 +64,7 @@
     main > :nth-child(4) { animation-delay: .15s; }
     main > :nth-child(5) { animation-delay: .2s; }
     main > :nth-child(6) { animation-delay: .25s; }
+    main > :nth-child(7) { animation-delay: .3s; }
     @keyframes rise { from { opacity: 0; transform: translateY(14px); } }
 
     @media (prefers-reduced-motion: reduce) {
@@ -57,8 +77,11 @@
 <body>
   <main>
     <img class="logo" src="<?= logoUrl ?>" alt="Gmail Expenses">
-    <select id="category" aria-label="Categoría"></select>
-    <input id="detail" value="Manual" placeholder="Detalle" autocomplete="off"
+    <div id="categories" role="group" aria-label="Categoría">
+      <div class="loading">Cargando categorías<span class="dots"><i></i><i></i><i></i></span></div>
+    </div>
+    <div id="chosen" aria-live="polite"></div>
+    <input id="detail" placeholder="Detalle" autocomplete="off"
            aria-label="Detalle">
     <input id="amount" inputmode="numeric" placeholder="Precio" autocomplete="off"
            aria-label="Precio">
@@ -68,7 +91,7 @@
 
   <script>
     const $ = (id) => document.getElementById(id);
-    const select = $('category'), detail = $('detail'), amount = $('amount'), add = $('add'), msg = $('msg');
+    const grid = $('categories'), chosen = $('chosen'), detail = $('detail'), amount = $('amount'), add = $('add'), msg = $('msg');
 
     // Google's Material Symbols (Apache 2.0)
     const icon = (path) => '<svg viewBox="0 -960 960 960" fill="currentColor">' +
@@ -81,11 +104,11 @@
       loading: 'Agregando<span class="dots"><i></i><i></i><i></i></span>',
       done: `${CHECK_ICON} Agregado`,
     };
-    let addState = 'idle', categoriesReady = false;
+    let addState = 'idle', category = '';
 
-    // Add only works when idle, with the categories loaded and a price typed
+    // Add only works when idle, with a category chosen and a price typed
     function refreshAdd() {
-      add.disabled = addState !== 'idle' || !categoriesReady || !digitsOf(amount.value);
+      add.disabled = addState !== 'idle' || !category || !digitsOf(amount.value);
     }
 
     function setAdd(state) {
@@ -102,7 +125,7 @@
     let pressedAdd = false;
     document.addEventListener('pointerdown', (e) => {
       pressedAdd = !!e.target.closest('#add');
-      if (!e.target.closest('input, select')) document.activeElement.blur();
+      if (!e.target.closest('input')) document.activeElement.blur();
     });
 
     function show(text, kind) { msg.textContent = text; msg.className = kind || ''; }
@@ -139,15 +162,25 @@
 
     google.script.run
       .withSuccessHandler((categories) => {
-        const sorted = [...categories].sort((a, b) => a.name.localeCompare(b.name, 'es'));
-        select.innerHTML = sorted
-          .map((c) => `<option value="${c.name}">${c.label}</option>`)
-          .join('');
-        select.value = 'Otros';
-        categoriesReady = true;
-        refreshAdd();
+        grid.replaceChildren();
+        for (const c of categories) {
+          const button = document.createElement('button');
+          button.className = 'cat';
+          button.textContent = c.emoji;
+          button.style.background = c.color;
+          button.setAttribute('aria-label', c.name);
+          button.setAttribute('aria-pressed', 'false');
+          button.addEventListener('click', () => {
+            for (const other of grid.children) other.setAttribute('aria-pressed', 'false');
+            button.setAttribute('aria-pressed', 'true');
+            category = c.name;
+            chosen.textContent = c.name;
+            refreshAdd();
+          });
+          grid.appendChild(button);
+        }
       })
-      .withFailureHandler((e) => show(e.message, 'err'))
+      .withFailureHandler((e) => { grid.replaceChildren(); show(e.message, 'err'); })
       .getCategories();
 
     add.addEventListener('click', (e) => {
@@ -164,7 +197,7 @@
           .withSuccessHandler(() => {
             amount.value = '';
             lastDigits = '';
-            detail.value = 'Manual';
+            detail.value = '';
             setAdd('done');
             setTimeout(() => setAdd('idle'), 1800);
           })
@@ -172,7 +205,7 @@
             setAdd('idle');
             show(e.message, 'err');
           })
-          .addExpense(select.value, value, detail.value);
+          .addExpense(category, value, detail.value);
       });
     });
   </script>

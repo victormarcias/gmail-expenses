@@ -28,3 +28,22 @@ const USD_RATE = 'cripto';
 // Every handled email gets this label, read or not (the reason is in the
 // run's log), and is never looked at again by run().
 const LABEL = 'Gmail Expenses';
+
+// Order of the category buttons in the manual entry page, left to right and
+// top to bottom. A category missing here goes last, in sheet order.
+const WEB_APP_CATEGORY_ORDER = [
+  'Hogar',
+  'Suscripciones',
+  'Tarjetas',
+  'Compras',
+  'Delivery',
+  'Supermercado',
+  'Salud',
+  'Educación',
+  'Mascotas',
+  'Transporte',
+  'Ocio',
+  'Vacaciones',
+  'Impuestos',
+  'Otros',
+];

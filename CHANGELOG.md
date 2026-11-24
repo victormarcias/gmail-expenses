@@ -18,8 +18,9 @@ and 1.1.0 is January 2027. An extra release within a month bumps the patch.
   a square favicon on its tab. `deploy-webapp.sh` installs it and prints its
   URL.
 - **Categories:** `Ocio`, `Mascotas`, `Impuestos`, `Educación` and
-  `Vacaciones`, for manual entries. The web app lists them alphabetically with
-  an emoji each, and starts on `Otros`.
+  `Vacaciones`, for manual entries. The web app shows them as a
+  grid of colored emoji buttons; the chosen one stays pressed and its name
+  shows below. No category is chosen at first.
 - **Project:** logo at the top of the README, and a Spanish
   `README.es.md`.
 

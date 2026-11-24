@@ -10,7 +10,7 @@ local senders. Only the email body is read, never attachments.
 | File | What it holds |
 |---|---|
 | `source/Main.gs` | `install()` (trigger), `run()`, `dryRun()`, `scanMessages()`, `sources()` |
-| `source/Config.gs` | Hand-edited settings: `RUN_EVERY_HOURS`, `DRY_RUN_*`, `USD_RATE`, `LABEL` |
+| `source/Config.gs` | Hand-edited settings: `RUN_EVERY_HOURS`, `DRY_RUN_*`, `USD_RATE`, `LABEL`, `WEB_APP_CATEGORY_ORDER` |
 | `source/Categories.gs` | Hand-edited senders, `CATEGORIES` (one sheet column each), `PAYMENTS`, generic patterns |
 | `source/Parse.gs` | `parseMessage()`, amount/date parsing, DolarApi rate |
 | `source/Sheet.gs` | Monthly tab writing, headers matched by name, `TOTAL` row |

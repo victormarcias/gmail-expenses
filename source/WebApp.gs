@@ -3,8 +3,8 @@
 // no secret lives in the page.
 // author: @victormarcias
 
-// Detalle the page starts with, and the one used when it is left empty
-const MANUAL_DETAIL = 'Manual';
+// Detalle used when the page's field is left empty
+const MANUAL_DETAIL = 'Detalle';
 
 // Largest amount, in pesos, the page lets through and addExpense accepts
 const MAX_AMOUNT = 1000000;
@@ -26,36 +26,66 @@ function doGet() {
   return page.evaluate()
     .setFaviconUrl(FAVICON_URL)
     .setTitle(`$ Gmail Expenses - ${Session.getEffectiveUser().getEmail()}`)
-    .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+    .addMetaTag('viewport',
+      'width=device-width, initial-scale=1, viewport-fit=cover')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
-// Shown beside each category in the page only: the sheet columns keep the
-// plain names. A category missing here is listed without one.
+// Shown on each category's button in the page only: the sheet columns keep the
+// plain names. A category missing here shows its first letter.
+// Alphabetical.
 const CATEGORY_EMOJIS = {
-  'Compras': '🛍️',
+  'Compras': '🎁',
   'Delivery': '🍔',
   'Educación': '🎓',
-  'Hogar': '💡',
-  'Impuestos': '🧾',
-  'Mascotas': '🐾',
+  'Hogar': '🏠',
+  'Impuestos': '👮🏻‍♂️',
+  'Mascotas': '🐇',
   'Ocio': '🍷',
   'Otros': '📦',
   'Salud': '💊',
-  'Supermercado': '🛒',
+  'Supermercado': '🥑',
   'Suscripciones': '🖥️',
   'Tarjetas': '💳',
   'Transporte': '🚗',
   'Vacaciones': '🏖️',
 };
 
-// Called from the page: every category as its name (what addExpense takes)
-// and its label.
+// Background of each category's button in the page. Related categories share a
+// color. A category missing here gets CATEGORY_COLOR_DEFAULT.
+// Alphabetical.
+const CATEGORY_COLORS = {
+  'Compras': '#1e3a8a',
+  'Delivery': '#dc2626',
+  'Educación': '#2563eb',
+  'Hogar': '#0891b2',
+  'Impuestos': '#2563eb',
+  'Mascotas': '#f3b151',
+  'Ocio': '#ec4899',
+  'Otros': '#8b6b4f',
+  'Salud': '#16a34a',
+  'Supermercado': '#dc2626',
+  'Suscripciones': '#0891b2',
+  'Tarjetas': '#1e3a8a',
+  'Transporte': '#7c3aed',
+  'Vacaciones': '#ec4899',
+};
+const CATEGORY_COLOR_DEFAULT = '#52525b';
+
+// Called from the page: every category as its name (what addExpense takes),
+// its emoji and its button color, in the order of WEB_APP_CATEGORY_ORDER.
+// Categories missing there come last, in sheet order.
 function getCategories() {
-  return amountHeaders().map((name) => ({
-    name,
-    label: CATEGORY_EMOJIS[name] ? `${CATEGORY_EMOJIS[name]} ${name}` : name,
-  }));
+  const order = WEB_APP_CATEGORY_ORDER;
+  const rank = (name) => order.includes(name) ? order.indexOf(name) : order.length;
+  return amountHeaders()
+    .map((name, i) => ({ name, i }))
+    .sort((a, b) => rank(a.name) - rank(b.name) || a.i - b.i)
+    .map(({ name }) => ({
+      name,
+      emoji: CATEGORY_EMOJIS[name] || name.charAt(0),
+      color: CATEGORY_COLORS[name] || CATEGORY_COLOR_DEFAULT,
+    }));
 }
 
 // Called from the page: true while run() holds the script lock, which it does
