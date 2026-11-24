@@ -16,8 +16,8 @@ Solo lee el cuerpo del mail, nunca los PDF adjuntos.
 
 | Columna | Remitentes | Estado |
 |---|---|---|
-| 🏠 Hogar | Pagos a `BILLS` (luz, gas, agua, impuestos municipales). Se leen sus facturas (y las del seguro del hogar y los vencimientos de facturas del banco) | Pagar para facturas, Pagado para pagos |
-| 📱 Servicios | Pagos a `SERVICES`: facturas de teléfono, internet y TV (se leen como Pagar). Servicios digitales (streaming, música, juegos, apps, cloud, IA): sus recibos, en ARS o USD, sin los cargos de tarjeta de crédito | Pagado |
+| 🏠 Hogar | Pagos a `BILLS` (luz, gas, agua, impuestos municipales, teléfono, internet y TV). Se leen sus facturas (y las del seguro del hogar y los vencimientos de facturas del banco) | Pagar para facturas, Pagado para pagos |
+| 🔁 Suscripciones | `SUBSCRIPTIONS`: servicios digitales (streaming, música, juegos, apps, cloud, IA). Sus recibos, en ARS o USD, sin los cargos de tarjeta de crédito | Pagado |
 | 🩺 Salud | `PREPAGAS` (cobertura de salud), pagadas por débito automático | Pagado |
 | 💳 Tarjetas | `CREDIT_CARDS` (solo resúmenes de tarjeta de crédito, no de cuenta: una fila por saldo, ARS y USD) | Pagar |
 | 🚕 Transporte | Uber, Cabify | Pagado |
@@ -29,9 +29,10 @@ Solo lee el cuerpo del mail, nunca los PDF adjuntos.
 ## La planilla
 
 Una pestaña por mes (`2026-11`). Con las categorías por defecto, las columnas
-son `Fecha`, `Detalle`, `Hogar`, `Servicios`, `Salud`, `Tarjetas`,
-`Transporte`, `Compras`, `Supermercado`, `Delivery`, `Otros`, `USD`,
-`Vencimiento` y `Estado`.
+son `Fecha`, `Detalle`, `Hogar`, `Suscripciones`, `Salud`, `Tarjetas`,
+`Transporte`, `Compras`, `Supermercado`, `Delivery`, `Ocio`, `Mascotas`,
+`Impuestos`, `Educación`, `Vacaciones`, `Otros`, `USD`, `Vencimiento` y
+`Estado`.
 
 - Cada corrida escribe en la pestaña del mes **en que corre**, no en la del
   mail: una factura enviada el 31 cae en la pestaña del mes siguiente, cuando
@@ -106,15 +107,15 @@ La sirve el propio script como web app que solo su dueño puede abrir, así que
 el inicio de sesión de Google es la única autenticación. Para abrirla en el
 celular:
 
-1. Corré `./webapp.sh`. Sube el código, crea la web app y copia su URL
+1. Corré `./deploy-webapp.sh`. Sube el código, crea la web app y copia su URL
    (termina en `/exec`).
 2. Mandá la URL al celular (AirDrop, una nota, un mensaje a vos mismo).
 3. Abrila en Safari o Chrome e iniciá sesión en Google una sola vez.
-4. *Compartir → Agregar a pantalla de inicio* (el botón *Agregar a Inicio* de
-   la página dice dónde): se abre como una app, ya con la sesión iniciada.
+4. *Compartir → Agregar a pantalla de inicio*: se abre como una app, ya con
+   la sesión iniciada.
 
-Después de un cambio en la página, corré `./webapp.sh` de nuevo: publica una
-versión nueva y la URL no cambia.
+Después de un cambio en la página, corré `./deploy-webapp.sh` de nuevo:
+publica una versión nueva y la URL no cambia.
 
 ## Instalación
 
@@ -147,10 +148,10 @@ página donde hay que hacer algo a mano:
 
 Se puede correr de nuevo en cualquier momento: saltea lo que ya está hecho.
 
-Después, cada cambio sube con `./deploy.sh` (inicia sesión de su propio
+Después, cada cambio sube con `./deploy-script.sh` (inicia sesión de su propio
 usuario de `clasp` como `CLASP_ACCOUNT` de `.env` si hace falta, corre
-`clasp push` y abre el proyecto). Antes copiá `.env.example` a `.env`. Para procesar de inmediato,
-corré `run()` desde el editor.
+`clasp push` y abre el proyecto). Antes copiá `.env.example` a `.env`. Para
+procesar de inmediato, corré `run()` desde el editor.
 
 > ⚠️ Editá en local, no en el editor web: `clasp push` pisa lo que se haya
 > cambiado ahí.
@@ -168,10 +169,10 @@ Solo los IDs van en Script Properties.
 
 ### Probar cambios
 
-Después de un cambio, corré `./deploy.sh` y después `dryRun()` desde el
-editor: loguea lo que haría `run()` con los mails sin label de la bandeja de
-entrada, más los que tienen label de las últimas `DRY_RUN_HOURS`, sin poner
-labels ni tocar la planilla.
+Después de un cambio, corré `./deploy-script.sh` y después `dryRun()` desde
+el editor: loguea lo que haría `run()` con los mails sin label de la bandeja
+de entrada, más los que tienen label de las últimas `DRY_RUN_HOURS`, sin
+poner labels ni tocar la planilla.
 
 ```
 OK       [Salud] 12/11/2026 Prepaga – Tu factura está disponible

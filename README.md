@@ -16,8 +16,8 @@ It only reads the email body, never PDF attachments.
 
 | Column | Senders | Estado |
 |---|---|---|
-| 🏠 Hogar | Payments to `BILLS` (electricity, gas, water, municipal taxes). Their bills (and home insurance and bank invoices due) are read | Pagar for bills, Pagado for payments |
-| 📱 Servicios | Payments to `SERVICES` phone, internet and TV bills (read as Pagar). Digital services (streaming, music, games, apps, cloud, AI): their receipts, ARS or USD, credit card charges skipped | Pagado |
+| 🏠 Hogar | Payments to `BILLS` (electricity, gas, water, municipal taxes, phone, internet and TV). Their bills (and home insurance and bank invoices due) are read | Pagar for bills, Pagado for payments |
+| 🔁 Suscripciones | `SUBSCRIPTIONS`: digital services (streaming, music, games, apps, cloud, AI). Their receipts, ARS or USD, credit card charges skipped | Pagado |
 | 🩺 Salud | `PREPAGAS` (health insurance), paid by automatic debit | Pagado |
 | 💳 Tarjetas | `CREDIT_CARDS` (credit card statements only, not account statements: one row per balance, ARS and USD) | Pagar |
 | 🚕 Transporte | Uber, Cabify | Pagado |
@@ -29,8 +29,9 @@ It only reads the email body, never PDF attachments.
 ## The sheet
 
 One tab per month (`2026-11`). With the default categories, the columns are
-`Fecha`, `Detalle`, `Hogar`, `Servicios`, `Salud`, `Tarjetas`, `Transporte`,
-`Compras`, `Supermercado`, `Delivery`, `Otros`, `USD`, `Vencimiento` and
+`Fecha`, `Detalle`, `Hogar`, `Suscripciones`, `Salud`, `Tarjetas`,
+`Transporte`, `Compras`, `Supermercado`, `Delivery`, `Ocio`, `Mascotas`,
+`Impuestos`, `Educación`, `Vacaciones`, `Otros`, `USD`, `Vencimiento` and
 `Estado`.
 
 - Each run writes to the tab of the month **it runs in**, not the email's: a
@@ -101,14 +102,13 @@ automática en curso…" and adds the row when it ends.
 It is served by the script itself as a web app only its owner can open, so
 Google's sign-in is the only authentication. To open it on the phone:
 
-1. Run `./webapp.sh`. It uploads the code, creates the web app and copies its
-   URL (it ends in `/exec`).
+1. Run `./deploy-webapp.sh`. It uploads the code, creates the web app and
+   copies its URL (it ends in `/exec`).
 2. Send the URL to the phone (AirDrop, a note, a message to yourself).
 3. Open it in Safari or Chrome and sign in to Google once.
-4. *Share → Add to Home Screen* (the page's *Agregar a Inicio* button says
-   where): it opens like an app, already signed in.
+4. *Share → Add to Home Screen*: it opens like an app, already signed in.
 
-After a change to the page, run `./webapp.sh` again: it publishes a new
+After a change to the page, run `./deploy-webapp.sh` again: it publishes a new
 version and the URL stays the same.
 
 ## Setup
@@ -142,10 +142,10 @@ page where something has to be done by hand:
 
 It can be run again at any time: it skips what's already done.
 
-After that, every change goes up with `./deploy.sh` (it signs its own `clasp`
-user in as `CLASP_ACCOUNT` from `.env` if needed, runs `clasp push` and opens
-the project). Copy `.env.example` to `.env` first. To process right away, run
-`run()` from the editor.
+After that, every change goes up with `./deploy-script.sh` (it signs its own
+`clasp` user in as `CLASP_ACCOUNT` from `.env` if needed, runs `clasp push` and
+opens the project). Copy `.env.example` to `.env` first. To process right
+away, run `run()` from the editor.
 
 > ⚠️ Edit locally, not in the web editor: `clasp push` overwrites whatever
 > was changed there.
@@ -163,10 +163,10 @@ Only IDs go in Script Properties.
 
 ### Testing changes
 
-After a change, run `./deploy.sh`, then run `dryRun()` from the editor: it
-logs what `run()` would do with the unlabeled inbox emails, plus the labeled
-ones from the last `DRY_RUN_HOURS`, without labeling anything or touching the
-sheet.
+After a change, run `./deploy-script.sh`, then run `dryRun()` from the
+editor: it logs what `run()` would do with the unlabeled inbox emails, plus the
+labeled ones from the last `DRY_RUN_HOURS`, without labeling anything or
+touching the sheet.
 
 ```
 OK       [Salud] 12/11/2026 Prepaga – Tu factura está disponible

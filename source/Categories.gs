@@ -82,8 +82,8 @@ const BILL_PATTERNS = {
   status: STATUS_TO_PAY,
 };
 
-// The house's essentials: electricity, gas, water, municipal taxes. Their
-// bills are read as BILL_PATTERNS.
+// The house's essentials: electricity, gas, water, municipal taxes, phone,
+// internet and TV. Their bills are read as BILL_PATTERNS.
 const BILLS = [
   ...[
     // Electricity
@@ -110,11 +110,7 @@ const BILLS = [
     ...BILL_PATTERNS,
     subject: /por vencer/i,
   },
-];
-
-// Secondary bills: phone, internet, TV, and any digital service.
-const SERVICES = [
-  // Phone, internet, TV: like BILLS, read as BILL_PATTERNS
+  // Phone, internet, TV
   ...[
     'Movistar', 'Tuenti', { name: 'Claro', from: 'claro.com.ar' },
     { name: 'Personal', from: 'personal.com.ar' }, 'Telecentro', 'DirecTV',
@@ -122,10 +118,13 @@ const SERVICES = [
     ...BILL_PATTERNS,
     ...(typeof entry === 'string' ? { name: entry } : entry),
   })),
-  // Digital services (streaming, music, games, apps, cloud, AI): charged
-  // automatically, so their receipts are read, with no due date, sometimes in
-  // USD, and credit card charges are skipped. Only receipts, so promos are
-  // ignored.
+];
+
+// Digital services (streaming, music, games, apps, cloud, AI): charged
+// automatically, so their receipts are read, with no due date, sometimes in
+// USD, and credit card charges are skipped. Only receipts, so promos are
+// ignored.
+const SUBSCRIPTIONS = [
   ...[
     // Streaming and music
     { name: 'Netflix', from: 'netflix.com' },
@@ -165,8 +164,8 @@ const CATEGORIES = {
   'Hogar': {
     entries: BILLS,
   },
-  'Servicios': {
-    entries: SERVICES,
+  'Suscripciones': {
+    entries: SUBSCRIPTIONS,
     amount: AMOUNT_ARS,
     status: STATUS_PAID,
   },
@@ -252,6 +251,13 @@ const CATEGORIES = {
     amount: AMOUNT_ARS,
     status: STATUS_PAID,
   },
+  // Manual entry only (the web app): no senders of their own, so no email is
+  // ever matched to them
+  'Ocio': { entries: [] },
+  'Mascotas': { entries: [] },
+  'Impuestos': { entries: [] },
+  'Educación': { entries: [] },
+  'Vacaciones': { entries: [] },
   // No senders of its own: payment confirmations from senders that aren't
   // known ('Otros pagos', in PAYMENTS)
   'Otros': {
