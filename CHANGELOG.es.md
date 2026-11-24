@@ -16,9 +16,9 @@ Las versiones son `<años desde 2026>.<mes>.<parche>`: 0.11.0 es noviembre de
 - **Carga manual:** una página web de una pantalla (categoría, detalle,
   precio, Agregar) que escribe una fila pagada en la pestaña del mes actual.
   La sirve el script como web app que solo su dueño puede abrir, con el logo
-  del proyecto en la página y en su pestaña. `webapp.sh` la instala e imprime
-  su URL, y un botón *Agregar a Inicio* dice cómo agregar la página a la
-  pantalla de inicio del celular.
+  del proyecto en la página y un favicon cuadrado en su pestaña. `webapp.sh`
+  la instala e imprime su URL, y un botón *Agregar a Inicio* dice cómo
+  agregar la página a la pantalla de inicio del celular.
 - **Proyecto:** logo al inicio del README y un `README.es.md` en
   español.
 

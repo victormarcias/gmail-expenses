@@ -6,17 +6,21 @@
 // Detalle the page starts with, and the one used when it is left empty
 const MANUAL_DETAIL = 'Manual';
 
-// The logo of the page and of its browser tab: the README's image, served by
-// GitHub. It shows once the repo has been pushed.
-const LOGO_URL =
-  'https://raw.githubusercontent.com/victormarcias/gmail-expenses/develop/images/logo.png';
+// The page's logo and its browser tab icon: images of this repo, served by
+// GitHub. They show once the repo has been pushed.
+const IMAGES_URL =
+  'https://raw.githubusercontent.com/victormarcias/gmail-expenses/develop/images';
+const LOGO_URL = `${IMAGES_URL}/logo.png`;
+const FAVICON_URL = `${IMAGES_URL}/favicon.png`;
 
+// The title carries the account the sheet belongs to, read at run time so no
+// address is written in the code.
 function doGet() {
   const page = HtmlService.createTemplateFromFile('WebAppPage');
   page.logoUrl = LOGO_URL;
   return page.evaluate()
-    .setFaviconUrl(LOGO_URL)
-    .setTitle('Gmail Expenses')
+    .setFaviconUrl(FAVICON_URL)
+    .setTitle(`Gmail Expenses - ${Session.getEffectiveUser().getEmail()}`)
     .addMetaTag('viewport', 'width=device-width, initial-scale=1')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }

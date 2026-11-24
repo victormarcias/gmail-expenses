@@ -22,7 +22,7 @@ local senders. Only the email body is read, never attachments.
 | `deploy.sh` | `login.sh`, then `clasp push` and opening the project in the browser |
 | `login.sh` | Signs clasp in as `CLASP_ACCOUNT` from `.env` (git-ignored; template `.env.example`) |
 | `source/appsscript.json` | Time zone (Buenos Aires), Gmail advanced service, V8 |
-| `images/` | README logo and screenshots |
+| `images/` | README logo, square favicon (`favicon.png`) and screenshots |
 | `CHANGELOG.md` | Keep a Changelog, Unreleased promoted monthly (`.es.md` mirrors it) |
 
 ## How it works

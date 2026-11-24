@@ -15,8 +15,9 @@ and 1.1.0 is January 2027. An extra release within a month bumps the patch.
 - **Manual entry:** a one-screen web page (category, detail, price, Add) that
   writes a paid row into the current month's tab. It is served by the script
   as a web app only its owner can open, with the project logo on the page and
-  its tab. `webapp.sh` installs it and prints its URL, and an *Agregar a
-  Inicio* button says how to add the page to a phone's home screen.
+  a square favicon on its tab. `webapp.sh` installs it and prints its URL, and
+  an *Agregar a Inicio* button says how to add the page to a phone's home
+  screen.
 - **Project:** logo at the top of the README, and a Spanish
   `README.es.md`.
 
