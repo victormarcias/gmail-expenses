@@ -18,6 +18,8 @@ and 1.1.0 is January 2027. An extra release within a month bumps the patch.
 ### Changed
 
 - **Gmail:** handled emails are marked as read along with the label.
+- **Payments:** Pagomiscuentas confirmations are skipped: the bill is
+  already a row.
 - **Project:** the Apps Script code lives in `source/`, which is what
   `clasp push` uploads.
 

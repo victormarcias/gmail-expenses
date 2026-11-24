@@ -19,6 +19,8 @@ Las versiones son `<años desde 2026>.<mes>.<parche>`: 0.11.0 es noviembre de
 ### Cambiado
 
 - **Gmail:** los mails procesados se marcan como leídos junto con el label.
+- **Pagos:** se saltean las confirmaciones de Pagomiscuentas: la factura ya
+  es una fila.
 - **Proyecto:** el código de Apps Script vive en `source/`, que es lo que
   sube `clasp push`.
 

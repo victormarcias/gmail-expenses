@@ -262,6 +262,9 @@ const CATEGORIES = {
 const PAYMENTS = {
   entries: [
     { name: 'Mercado Pago', from: 'mercadopago.com.ar' },
+    // Bill payment gateway: the bill is already a row, so its confirmation
+    // is marked as processed without one (skipIf matches any body).
+    { name: 'Pagomiscuentas', from: 'pagomiscuentas.com', skipIf: /[\s\S]*/ },
     // Reads invoices due from Brubank: one row per invoice ("Edemsa: $ 1.234
     // Vence el 07-11-2026"). `items` is global: name, amount, due date.
     {
