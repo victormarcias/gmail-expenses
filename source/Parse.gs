@@ -61,7 +61,7 @@ function parseMessage(source, message) {
   if (source.payment) {
     const subject = message.getSubject();
     const payee = source.payee && firstMatch(source.payee, subject);
-    // Any sender: its name says more than a generic subject ("Pago aprobado")
+    // Any sender: its name says more than a generic subject
     base.detail = payee || (source.anySender && senderName(message)) || subject;
     base.category = categoryOf(base.detail) || source.category;
   }
@@ -80,7 +80,7 @@ function parseMessage(source, message) {
   return { rows };
 }
 
-// The From display name ("X <no-reply@x.com>" → X), or the address
+// The From display name, or the address
 function senderName(message) {
   const from = message.getFrom();
   const name = from.replace(/<[^>]*>/, '').replace(/"/g, '').trim();
@@ -111,8 +111,8 @@ function senderAddress(message) {
   return (match ? match[1] : from).trim().toLowerCase();
 }
 
-// The category of the first non-payment sender whose name is in `text`
-// ("X" → X's category), or null.
+// The category of the first non-payment sender whose name is in `text`, or
+// null.
 function categoryOf(text) {
   const source = sources().find((s) => !s.payment && sameName(text, s.name));
   return source ? source.category : null;

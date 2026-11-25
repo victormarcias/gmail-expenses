@@ -22,7 +22,7 @@ Solo lee el cuerpo del mail, nunca los PDF adjuntos.
 | 💳 Tarjetas | `CREDIT_CARDS` (solo resúmenes de tarjeta de crédito, no de cuenta: una fila por saldo, ARS y USD) | Pagar |
 | 🚗 Transporte | Uber, Cabify | Pagado |
 | 🎁 Compras | MercadoLibre, solo compras con débito / dinero en cuenta; pagos y transferencias a cualquiera que no se conozca (ver abajo) | Pagado |
-| 📦 Otros | Confirmaciones de pago de cualquier otro remitente (gateways, tiendas: "Tu pago ha sido acreditado a X", "Pago aprobado"), nunca de uno conocido | Pagado |
+| 📦 Otros | Confirmaciones de pago de cualquier otro remitente (gateways, tiendas), nunca de uno conocido | Pagado |
 | 🥑 Supermercado | PedidosYa Market, Jumbo, Disco, Vea, Coto, Carrefour, Día, ChangoMâs, La Anónima | Pagado |
 | 🍔 Delivery | PedidosYa (pedidos y Plus, no Market), Rappi (pedidos y Prime), Uber Eats | Pagado |
 
@@ -38,8 +38,7 @@ son `Fecha`, `Detalle`, `Hogar`, `Suscripciones`, `Salud`, `Tarjetas`,
   mail: una factura enviada el 31 cae en la pestaña del mes siguiente, cuando
   se paga.
 - Una fila por transacción, ordenada por fecha del mail (`Fecha`), con el
-  nombre del remitente en `Detalle` (`Uber`) y el monto en su columna de
-  categoría.
+  nombre del remitente en `Detalle` y el monto en su columna de categoría.
 - Un mail del mismo hilo que llega dentro de `ADJUSTED_RECEIPT_HOURS` de un
   recibo anterior del mismo remitente (un recibo ajustado) no agrega fila:
   queda el primer monto.
@@ -60,16 +59,15 @@ son `Fecha`, `Detalle`, `Hogar`, `Suscripciones`, `Salud`, `Tarjetas`,
 - Pagos: las facturas de la casa y de teléfono/internet entran como Pagar.
   Muchos servicios no mandan confirmación de pago, así que marcalos Pagado a
   mano. Cada confirmación de pago o transferencia de un remitente de `PAYMENTS`
-  ("Pago aprobado en X", "Transferiste a X") es una fila Pagado con el nombre
-  del destinatario, en la categoría de un remitente conocido con el nombre del
-  destinatario (`Hogar` para un servicio público), o `Compras` si no hay
-  ninguno. Un mail que lista facturas por vencer da una fila Pagar por factura,
-  con nombre y categoría de la misma forma (`Hogar` si no se conoce). Las
-  confirmaciones de cualquier remitente que no se conoce (un gateway de pago,
-  una tienda) se detectan por el asunto y van a `Otros`, salvo que se conozca
-  al destinatario; se nombran con el destinatario del asunto, o con el
-  remitente. Si se pagó con tarjeta de crédito, no agrega nada: ya está en el
-  resumen.
+  es una fila Pagado con el nombre del destinatario, en la categoría de un
+  remitente conocido con el nombre del destinatario (`Hogar` para un servicio
+  público), o `Compras` si no hay ninguno. Un mail que lista facturas por vencer
+  da una fila Pagar por factura, con nombre y categoría de la misma forma
+  (`Hogar` si no se conoce). Las confirmaciones de cualquier remitente que no se
+  conoce (un gateway de pago, una tienda) se detectan por el asunto y van a
+  `Otros`, salvo que se conozca al destinatario; se nombran con el destinatario
+  del asunto, o con el remitente. Si se pagó con tarjeta de crédito, no agrega
+  nada: ya está en el resumen.
 - Fila `TOTAL` al final: sumas de cada categoría y de `USD`. Se rearma en cada
   corrida, así que las filas agregadas a mano se incluyen.
 
@@ -96,7 +94,7 @@ son `Fecha`, `Detalle`, `Hogar`, `Suscripciones`, `Salud`, `Tarjetas`,
 ## ⚠️ Doble conteo
 
 Los resúmenes de tarjeta se suman al total. Todo lo pagado con tarjeta de
-crédito que además tiene su propio mail (un Uber, una factura, la prepaga) se
+crédito que además tiene su propio mail (un viaje, una factura, la prepaga) se
 cuenta dos veces: una en su columna y otra dentro del resumen. Las compras en
 tiendas online, el streaming y los pagos ya saltean los cargos de tarjeta de
 crédito por esta razón (`CREDIT_CARD`, cuando el mail lo dice); el resto no,

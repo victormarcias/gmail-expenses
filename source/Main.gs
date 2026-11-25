@@ -143,7 +143,7 @@ function scanMessages(labeledSince, handle, deadline = Infinity) {
   scanned.forEach((source) => {
     if (!finished) return;
     findMessageIds(source, labeledSince).forEach((id) => {
-      // The same sender can feed two categories (Uber / Uber Eats)
+      // The same sender can feed two categories
       if (!finished || seen[id]) return;
       if (Date.now() > deadline) {
         finished = false;

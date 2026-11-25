@@ -22,7 +22,7 @@ It only reads the email body, never PDF attachments.
 | 💳 Tarjetas | `CREDIT_CARDS` (credit card statements only, not account statements: one row per balance, ARS and USD) | Pagar |
 | 🚗 Transporte | Uber, Cabify | Pagado |
 | 🎁 Compras | MercadoLibre, only debit / account money purchases; payments and transfers to anyone not known (see below) | Pagado |
-| 📦 Otros | Payment confirmations from any other sender (gateways, shops: "Tu pago ha sido acreditado a X", "Pago aprobado"), never from a known one | Pagado |
+| 📦 Otros | Payment confirmations from any other sender (gateways, shops), never from a known one | Pagado |
 | 🥑 Supermercado | PedidosYa Market, Jumbo, Disco, Vea, Coto, Carrefour, Día, ChangoMâs, La Anónima | Pagado |
 | 🍔 Delivery | PedidosYa (orders and Plus, not Market), Rappi (orders and Prime), Uber Eats | Pagado |
 
@@ -37,7 +37,7 @@ One tab per month (`2026-11`). With the default categories, the columns are
 - Each run writes to the tab of the month **it runs in**, not the email's: a
   bill sent on the 31st lands in next month's tab, when it's paid.
 - One row per transaction, sorted by email date (`Fecha`), with the sender's
-  name in `Detalle` (`Uber`) and the amount in its category column.
+  name in `Detalle` and the amount in its category column.
 - An email of the same thread that arrives within `ADJUSTED_RECEIPT_HOURS` of
   an earlier receipt from the same sender (an adjusted receipt) adds no row:
   the first amount stays.
@@ -55,17 +55,15 @@ One tab per month (`2026-11`). With the default categories, the columns are
 - `Estado`: Pagar / Pagado dropdown. Card statements and due notices come in
   as Pagar; switch them by hand once paid.
 - Payments: house and phone/internet bills come in as Pagar. Many services send
-  no payment confirmation, so mark them Pagado by hand. Each payment or
-  transfer confirmation from a `PAYMENTS` sender ("Pago aprobado en X",
-  "Transferiste a X") is a Pagado row named after the payee, in the category of
-  a known sender with the
-  payee's name (`Hogar` for a utility), or `Compras` if none. An email listing
-  invoices due gives one Pagar row per invoice, named and categorized the same
-  way (`Hogar` if unknown). Confirmations from any sender that isn't known (a
-  payment gateway, a shop) are picked up by their subject and go to `Otros`
-  unless the payee is known; they're named after the payee in the subject, or
-  the sender. Paid by credit card, it adds nothing: it's already in the
-  statement.
+  no payment confirmation, so mark them Pagado by hand. Each payment or transfer
+  confirmation from a `PAYMENTS` sender is a Pagado row named after the payee,
+  in the category of a known sender with the payee's name (`Hogar` for a
+  utility), or `Compras` if none. An email listing invoices due gives one Pagar
+  row per invoice, named and categorized the same way (`Hogar` if unknown).
+  Confirmations from any sender that isn't known (a payment gateway, a shop) are
+  picked up by their subject and go to `Otros` unless the payee is known;
+  they're named after the payee in the subject, or the sender. Paid by credit
+  card, it adds nothing: it's already in the statement.
 - `TOTAL` row at the bottom: sums for every category and `USD`. It's rebuilt
   on every run, so rows added by hand are included.
 
@@ -91,7 +89,7 @@ One tab per month (`2026-11`). With the default categories, the columns are
 ## ⚠️ Double counting
 
 Card statements are added to the total. Anything paid with a credit card that
-also has its own email (an Uber, a bill, the prepaga) is counted twice: once in
+also has its own email (a ride, a bill, the prepaga) is counted twice: once in
 its column and once inside the statement. Online shop purchases, streaming and
 payments already skip credit card charges for this reason (`CREDIT_CARD`, when
 the email says so); the rest don't, since they're assumed to be paid with debit

@@ -50,15 +50,16 @@ const NOT_PAID = new RegExp([
 
 // Credit card statements (resumen de tarjeta).
 const CREDIT_CARDS = [
-  // Value first, then its label: "11 Noviembre 2026 Fecha de vencimiento
-  // $ 50.079,83 Saldo en pesos U$S 88,84 Saldo en dólares"
+  // Value first, then its label: the due date, the pesos balance and the USD
+  // balance each come before the text that names them.
   {
     name: 'Brubank',
     amount: /(?<!U)\$\s*([\d.,]+)\s*Saldo en pesos/i,
     usd: /(?:U\$S|US\$|USD)\s*([\d.,]+)\s*Saldo en d[oó]lares/i,
     due: /(\d{1,2}\s+[a-z]+\s+\d{4})\s*Fecha de vencimiento/i,
   },
-  // "Saldo en pesos: 68.314,43" (no $), "Vencimiento: 11 Nov 26"
+  // Label first, then its value: the pesos balance has no $ sign, and the due
+  // date has a short month name.
   {
     name: 'Galicia',
     amount: /Saldo en pesos:\s*\$?\s*([\d.,]+)/i,
@@ -73,7 +74,7 @@ const CREDIT_CARDS = [
   { name: 'Ciudad', from: 'bancociudad.com.ar' },
   { name: 'Naranja X', from: 'naranjax.com' },
   { name: 'Ualá', from: 'uala.com.ar' },
-  // No due statement, only "Pagaste $ X": already paid.
+  // No due statement, only the amount paid: already paid.
   {
     name: 'Mercado Pago',
     subject: new RegExp(
@@ -106,8 +107,8 @@ const BILLS = [
     // Taxes
     'Municipio',
   ].map((name) => ({ name, ...BILL_PATTERNS })),
-  // Water in installments: one row per installment, named "CUOTA 1", with its
-  // own due date. `items` is global: name, amount, due date.
+  // Water in installments: one row per installment, named after its number,
+  // with its own due date. `items` is global: name, amount, due date.
   {
     name: 'AYSAM',
     from: 'aysam.com.ar',
@@ -192,9 +193,9 @@ const CATEGORIES = {
   },
   'Tarjetas': {
     entries: CREDIT_CARDS,
-    // "Resumen" plus a card, in any order, so account statements (caja de
-    // ahorro, cuenta corriente) are ignored. Galicia's card statement is
-    // "Resumen de Cuenta VISA", so "cuenta" alone can't rule one out.
+    // "Resumen" plus a card, in any order, so account statements are
+    // ignored. Some card statements also say "cuenta", so that word alone
+    // can't rule one out.
     subject: new RegExp(/^(?=.*resumen)/.source
       + /(?=.*(?:tarjeta|visa|master|amex|american express|cabal|naranja))/
         .source, 'i'),
@@ -231,7 +232,7 @@ const CATEGORIES = {
     amount: AMOUNT_ARS,
     status: STATUS_PAID,
   },
-  // Also gets PedidosYa Market orders, rerouted from Delivery
+  // Also gets the grocery orders rerouted from Delivery
   'Supermercado': {
     entries: [
       // Supermarket chains' online orders. Short or common names go by
@@ -283,9 +284,8 @@ const CATEGORIES = {
   },
 };
 
-// Payment and transfer confirmations, from any wallet or homebanking ("Pago
-// aprobado en X", "Pagaste tu factura de X", "Transferiste a X"). They're not
-// a column: each one is a Pagado row named after the `payee` (or the
+// Payment and transfer confirmations, from any wallet or homebanking. They're
+// not a column: each one is a Pagado row named after the `payee` (or the
 // subject), in the category of a known sender with that name, or `category`
 // if none.
 // Paid by credit card (skipIf), it adds nothing: it's already in the
@@ -301,8 +301,8 @@ const PAYMENTS = {
       from: 'avisos@pagomiscuentas.com',
       skipIf: /[\s\S]*/,
     },
-    // Reads invoices due from Brubank: one row per invoice ("Edemsa: $ 1.234
-    // Vence el 07-11-2026"). `items` is global: name, amount, due date.
+    // Reads the invoices due that the bank lists: one row per invoice.
+    // `items` is global: name, amount, due date.
     {
       name: 'Brubank',
       from: 'brubank.com',
@@ -315,11 +315,9 @@ const PAYMENTS = {
       // Not paid yet, so it can't be in a card statement
       skipIf: null,
     },
-    // Any other sender: payment confirmations from gateways and shops ("Tu
-    // pago ha sido acreditado a X.", "Pago aprobado", "Confirmación de
-    // compra"). Emails from a known sender (Mercado Pago included) never get
-    // here. Named after the payee in the subject or, failing that, the
-    // sender's name.
+    // Any other sender: payment confirmations from gateways and shops.
+    // Emails from a known sender (wallets included) never get here. Named
+    // after the payee in the subject or, failing that, the sender's name.
     {
       name: 'Otros pagos',
       anySender: true,
