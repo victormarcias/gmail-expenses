@@ -45,6 +45,8 @@ One tab per month (`2026-11`). With the default categories, the columns are
   default) from [DolarApi](https://dolarapi.com).
   The rate used is in the cell's note; if DolarApi is down, the last rate that
   worked is used and the note says so.
+  The conversion is a reference at the run day's rate, not the amount
+  actually paid: the real pesos amount is copied in by hand once known.
 - An email with both a pesos and a USD amount (a statement with both balances,
   from some banks) gives two rows: one with the pesos balance, and one with the
   USD balance and its conversion.

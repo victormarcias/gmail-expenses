@@ -47,6 +47,9 @@ son `Fecha`, `Detalle`, `Hogar`, `Suscripciones`, `Salud`, `Tarjetas`,
   defecto) de [DolarApi](https://dolarapi.com).
   La cotización usada está en la nota de la celda; si DolarApi está caída,
   se usa la última que funcionó y la nota lo aclara.
+  La conversión es una referencia a la cotización del día de la corrida, no
+  el monto realmente pagado: el monto real en pesos se copia a mano al
+  conocerlo.
 - Un mail con un monto en pesos y otro en USD (un resumen con ambos saldos, de
   algunos bancos) da dos filas: una con el saldo en pesos y otra con el saldo
   en USD y su conversión.
