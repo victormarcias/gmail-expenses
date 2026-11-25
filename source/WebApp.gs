@@ -9,10 +9,10 @@ const MANUAL_DETAIL = 'Detalle';
 // Largest amount, in pesos, the page lets through and addExpense accepts
 const MAX_AMOUNT = 1000000;
 
-// The page's logo and its browser tab icon: images of this repo, served by
-// GitHub. They show once the repo has been pushed.
+// The page's logo and its browser tab icon: images of this repo's main
+// branch, served by GitHub. A changed image shows once it is released.
 const IMAGES_URL =
-  'https://raw.githubusercontent.com/victormarcias/gmail-expenses/develop/images';
+  'https://raw.githubusercontent.com/victormarcias/gmail-expenses/main/images';
 const LOGO_URL = `${IMAGES_URL}/logo.png`;
 const FAVICON_URL = `${IMAGES_URL}/favicon.png`;
 
@@ -27,8 +27,7 @@ function doGet() {
     .setFaviconUrl(FAVICON_URL)
     .setTitle(`$ Gmail Expenses - ${Session.getEffectiveUser().getEmail()}`)
     .addMetaTag('viewport',
-      'width=device-width, initial-scale=1, viewport-fit=cover')
-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+      'width=device-width, initial-scale=1, viewport-fit=cover');
 }
 
 // Shown on each category's button in the page only: the sheet columns keep the
