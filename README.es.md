@@ -84,6 +84,9 @@ son `Fecha`, `Detalle`, `Hogar`, `Suscripciones`, `Salud`, `Tarjetas`,
   remitente conocido, y las confirmaciones de pago de cualquier otro remitente,
   sin importar cuán viejos sean. Los mails con label se saltean, así que nunca
   se agrega una fila dos veces. Los mails archivados nunca se miran.
+- Un mail de un remitente conocido cuyo asunto no matchea no es un gasto: no
+  recibe label y queda en la bandeja, y cada corrida lo vuelve a revisar.
+  Archivalo o borralo para que las corridas sean rápidas.
 - Una corrida deja de escanear a los 4 minutos (Apps Script la mata a los 6),
   escribe lo que tiene y le pone label solo a esos mails; el resto espera a la
   próxima corrida. La primera corrida sobre una bandeja llena puede necesitar

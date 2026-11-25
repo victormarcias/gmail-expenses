@@ -80,6 +80,9 @@ One tab per month (`2026-11`). With the default categories, the columns are
   payment confirmations from any other sender, however old. Labeled emails
   are skipped, so a row is never added twice. Archived emails are never
   looked at.
+- An email from a known sender whose subject doesn't match isn't an
+  expense: it gets no label and stays in the inbox, and every run checks it
+  again. Archive or delete it to keep runs fast.
 - A run stops scanning after 4 minutes (Apps Script kills it at 6), writes
   what it has and labels only those emails; the rest wait for the next run.
   The first run on a full inbox may need a few manual `run()`s.
