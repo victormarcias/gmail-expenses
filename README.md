@@ -163,8 +163,8 @@ away, run `run()` from the editor.
 
 Every setting is explained in a comment beside it, in the file it lives in:
 
-- [Config.gs](source/Config.gs): run interval, `dryRun()` options, the dollar rate
-  and the label.
+- [Config.gs](source/Config.gs): run interval, `dryRun()` options, the dollar
+  rate and the label.
 - [Categories.gs](source/Categories.gs): senders, categories and their patterns.
   To add a category, add a key to `CATEGORIES`.
 

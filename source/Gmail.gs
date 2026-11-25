@@ -8,9 +8,12 @@
 // Inbox emails that aren't labeled yet, however old, plus the labeled ones
 // received after `labeledSince` (unix seconds) when it's given.
 function findMessageIds(source, labeledSince) {
-  const terms = ['in:inbox', source.anySender ? source.query : `from:"${source.from}"`];
+  const sender = source.anySender ? source.query : `from:"${source.from}"`;
+  const terms = ['in:inbox', sender];
   const unlabeled = `-label:${searchName(LABEL)}`;
-  terms.push(labeledSince ? `(after:${labeledSince} OR ${unlabeled})` : unlabeled);
+  terms.push(labeledSince
+    ? `(after:${labeledSince} OR ${unlabeled})`
+    : unlabeled);
   const query = terms.join(' ');
 
   const ids = [];
@@ -30,26 +33,29 @@ function messageHeaders(id) {
     metadataHeaders: ['From', 'Subject'],
   });
   const header = (name) => {
-    const found = (payload.headers || []).find((h) => h.name.toLowerCase() === name);
+    const found = (payload.headers || [])
+      .find((h) => h.name.toLowerCase() === name);
     return found ? found.value : '';
   };
   return { from: header('from'), subject: header('subject') };
 }
 
-// Adds the label and marks the messages as read
-function markMessages(ids, id) {
+// Adds the label (by its id) and marks the messages as read
+function markMessages(ids, label) {
   // batchModify takes up to 1000 ids
   for (let i = 0; i < ids.length; i += 1000) {
-    Gmail.Users.Messages.batchModify(
-      { ids: ids.slice(i, i + 1000), addLabelIds: [id], removeLabelIds: ['UNREAD'] },
-      'me'
-    );
+    Gmail.Users.Messages.batchModify({
+      ids: ids.slice(i, i + 1000),
+      addLabelIds: [label],
+      removeLabelIds: ['UNREAD'],
+    }, 'me');
   }
 }
 
 // The id of LABEL, created if missing
 function labelId() {
-  const label = (Gmail.Users.Labels.list('me').labels || []).find((l) => l.name === LABEL);
+  const label = (Gmail.Users.Labels.list('me').labels || [])
+    .find((l) => l.name === LABEL);
   return (label || Gmail.Users.Labels.create({ name: LABEL }, 'me')).id;
 }
 

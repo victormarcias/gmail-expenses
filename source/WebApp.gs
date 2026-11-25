@@ -76,7 +76,8 @@ const CATEGORY_COLOR_DEFAULT = '#52525b';
 // Categories missing there come last, in sheet order.
 function getCategories() {
   const order = WEB_APP_CATEGORY_ORDER;
-  const rank = (name) => order.includes(name) ? order.indexOf(name) : order.length;
+  const rank = (name) =>
+    (order.includes(name) ? order.indexOf(name) : order.length);
   return amountHeaders()
     .map((name, i) => ({ name, i }))
     .sort((a, b) => rank(a.name) - rank(b.name) || a.i - b.i)
@@ -106,9 +107,8 @@ function addExpense(category, amount, detail) {
   const lock = LockService.getScriptLock();
   lock.waitLock(30000);
   try {
-    const timeZone = Session.getScriptTimeZone();
     const now = new Date();
-    writeRows(openSpreadsheet(), Utilities.formatDate(now, timeZone, 'yyyy-MM'), [{
+    writeRows(openSpreadsheet(), monthTab(now), [{
       date: now,
       detail: String(detail || '').trim() || MANUAL_DETAIL,
       category,

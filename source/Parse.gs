@@ -17,8 +17,12 @@ function parseMessage(source, message) {
   if (isAdjustedReceipt(source, message)) {
     return { rows: [], skip: 'adjusted receipt of an earlier receipt' };
   }
-  if (source.skipIf && source.skipIf.test(body)) return { rows: [], skip: 'skipIf matched' };
-  if (source.onlyIf && !source.onlyIf.test(body)) return { review: 'onlyIf did not match' };
+  if (source.skipIf && source.skipIf.test(body)) {
+    return { rows: [], skip: 'skipIf matched' };
+  }
+  if (source.onlyIf && !source.onlyIf.test(body)) {
+    return { review: 'onlyIf did not match' };
+  }
 
   // An email listing several bills: one row per bill, named and categorized
   // like a payment to it
@@ -39,8 +43,10 @@ function parseMessage(source, message) {
     return rows.length ? { rows } : { review: 'no item found' };
   }
 
-  const ars = source.amount ? parseAmount(firstMatch(source.amount, body)) : null;
-  const usd = source.usd ? parseAmount(firstMatch(source.usd, body)) : null;
+  const amountOf = (regex) =>
+    (regex ? parseAmount(firstMatch(regex, body)) : null);
+  const ars = amountOf(source.amount);
+  const usd = amountOf(source.usd);
   if (!ars && !usd) return { review: 'no amount found' };
 
   const base = {
@@ -114,7 +120,8 @@ function categoryOf(text) {
 
 // Whether `name` appears in `text`, ignoring case, accents and spaces
 function sameName(text, name) {
-  const normalize = (value) => String(value).normalize('NFD').replace(/[\u0300-\u036f\s]/g, '').toLowerCase();
+  const normalize = (value) => String(value).normalize('NFD')
+    .replace(/[\u0300-\u036f\s]/g, '').toLowerCase();
   return Boolean(normalize(name)) && normalize(text).includes(normalize(name));
 }
 
@@ -122,7 +129,8 @@ function sameName(text, name) {
 // patterns removed: *bold* and _italic_ markers, and line breaks (everything
 // ends up on one line, single-spaced).
 function cleanBody(message) {
-  return message.getPlainBody().replace(/[*_]/g, '').replace(/\s+/g, ' ').trim();
+  return message.getPlainBody()
+    .replace(/[*_]/g, '').replace(/\s+/g, ' ').trim();
 }
 
 function firstMatch(regex, text) {
@@ -135,7 +143,8 @@ function firstMatch(regex, text) {
 // left is a thousands one, whichever the format.
 function parseAmount(text) {
   if (!text) return null;
-  const [, integer, decimals] = text.replace(/[.,]+$/, '').match(/^(.*?)(?:[.,](\d{1,2}))?$/);
+  const [, integer, decimals] = text.replace(/[.,]+$/, '')
+    .match(/^(.*?)(?:[.,](\d{1,2}))?$/);
   const amount = Number(`${integer.replace(/\D/g, '') || 0}.${decimals || 0}`);
   return amount || null;
 }
@@ -171,11 +180,16 @@ function usdRate() {
   const lastKey = `LAST_FX_${USD_RATE}`;
 
   try {
-    const response = UrlFetchApp.fetch(DOLARAPI_URL + USD_RATE, { muteHttpExceptions: true });
+    const response = UrlFetchApp.fetch(DOLARAPI_URL + USD_RATE,
+      { muteHttpExceptions: true });
     if (response.getResponseCode() === 200) {
       const data = JSON.parse(response.getContentText());
       if (data.venta > 0) {
-        cachedRate = { rate: data.venta, date: data.fechaActualizacion.slice(0, 10), stale: false };
+        cachedRate = {
+          rate: data.venta,
+          date: data.fechaActualizacion.slice(0, 10),
+          stale: false,
+        };
         props.setProperty(lastKey, JSON.stringify(cachedRate));
         return cachedRate;
       }

@@ -47,8 +47,12 @@ function run() {
 
     // Unreadable emails are labeled too: the log is the only trace of them
     const finished = scanMessages(null, (source, id, message, result) => {
-      if (result.review) console.error(`${logName(source, message)} "${message.getSubject()}": ${result.review}`);
-      else rows.push(...result.rows);
+      if (result.review) {
+        const email = `${logName(source, message)} "${message.getSubject()}"`;
+        console.error(`${email}: ${result.review}`);
+      } else {
+        rows.push(...result.rows);
+      }
       handled.push(id);
     }, deadline).finished;
 
@@ -56,14 +60,12 @@ function run() {
     // email's: a bill sent on the 31st is paid next month, so it belongs there.
     // Rows first, labels after: if writing fails, the emails stay unlabeled
     // and the next run retries them instead of losing them.
-    if (rows.length) {
-      const month = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM');
-      writeRows(spreadsheet, month, rows);
-    }
+    if (rows.length) writeRows(spreadsheet, monthTab(new Date()), rows);
     markMessages(handled, label);
 
     if (!finished) {
-      console.warn(`Time budget reached after ${handled.length} emails: run() again to continue.`);
+      console.warn(`Time budget reached after ${handled.length} emails: `
+        + 'run() again to continue.');
     }
   } finally {
     lock.releaseLock();
@@ -75,17 +77,22 @@ function run() {
 // old), it includes the labeled ones from the last DRY_RUN_HOURS.
 function dryRun() {
   const since = Math.floor(Date.now() / 1000) - DRY_RUN_HOURS * 3600;
-  const formatDate = (date) => Utilities.formatDate(date, Session.getScriptTimeZone(), 'dd/MM/yyyy');
+  const formatDate = (date) =>
+    Utilities.formatDate(date, Session.getScriptTimeZone(), 'dd/MM/yyyy');
+  const indent = '\n         ';
   let count = 0;
 
   const { unmatched } = scanMessages(since, (source, id, message, result) => {
     count++;
-    const email = `[${source.category}] ${formatDate(message.getDate())} ${logName(source, message)} – ${message.getSubject()}`;
+    const email = `[${source.category}] ${formatDate(message.getDate())} `
+      + `${logName(source, message)} – ${message.getSubject()}`;
     if (result.review) {
       // The cleaned body is what the patterns run against, and it often
       // differs from how the email looks.
-      const body = JSON.stringify(cleanBody(message).slice(0, DRY_RUN_BODY_LENGTH));
-      console.log(`REVIEW   ${email}\n         ${result.review}\n         body: ${body}`);
+      const body = JSON.stringify(
+        cleanBody(message).slice(0, DRY_RUN_BODY_LENGTH));
+      console.log(
+        `REVIEW   ${email}${indent}${result.review}${indent}body: ${body}`);
     } else if (!result.rows.length) {
       console.log(`SKIP     ${email}\n         ${result.skip}`);
     } else {
@@ -100,14 +107,18 @@ function dryRun() {
     }
   });
 
-  unmatched.forEach((email) => console.log(`IGNORED  ${email}\n         subject didn't match`));
+  unmatched.forEach((email) => {
+    console.log(`IGNORED  ${email}${indent}subject didn't match`);
+  });
   console.log(`${count} handled, ${unmatched.length} ignored.`);
 }
 
 // Who the email is from, for the logs: an `anySender` source's name says
 // nothing about it
 function logName(source, message) {
-  return source.anySender ? `${source.name} (${senderName(message)})` : source.name;
+  return source.anySender
+    ? `${source.name} (${senderName(message)})`
+    : source.name;
 }
 
 // Calls handle(source, id, message, result) once per inbox email from a known
@@ -143,7 +154,9 @@ function scanMessages(labeledSince, handle, deadline = Infinity) {
       // full one is fetched below, once the subject is known to match
       const { from, subject } = messageHeaders(id);
       if (source.anySender && isKnown(from)) return;
-      if (!source.subject.test(subject) || (source.excludeSubject && source.excludeSubject.test(subject))) {
+      const excluded = source.excludeSubject
+        && source.excludeSubject.test(subject);
+      if (!source.subject.test(subject) || excluded) {
         // Any email with "pago" in the subject: too many to list
         if (!source.anySender) unmatched[id] = `${source.name} – ${subject}`;
         return;
@@ -169,13 +182,15 @@ function scanMessages(labeledSince, handle, deadline = Infinity) {
 let cachedSources = null;
 
 // Flattens CATEGORIES into one source per sender, with the category defaults
-// applied. Fails early on incomplete entries, since Categories.gs is hand-edited.
+// applied. Fails early on incomplete entries, since Categories.gs is
+// hand-edited.
 function sources() {
   if (cachedSources) return cachedSources;
   if (!CATEGORIES[PAYMENTS.category]) {
     throw new Error(`PAYMENTS: unknown category "${PAYMENTS.category}".`);
   }
-  const groups = Object.keys(CATEGORIES).map((category) => ({ ...CATEGORIES[category], category, group: category }));
+  const groups = Object.keys(CATEGORIES).map((category) => (
+    { ...CATEGORIES[category], category, group: category }));
   // Payments last: a wallet can also send card statements
   groups.push({ ...PAYMENTS, payment: true, group: 'PAYMENTS' });
 
@@ -187,15 +202,23 @@ function sources() {
       // when the payee isn't known)
       const source = { ...defaults, from: overrides.name, ...overrides };
       source.category = (defaults.payment && overrides.category) || category;
-      const fail = (problem) => { throw new Error(`${group} / ${source.name}: ${problem}.`); };
+      const fail = (problem) => {
+        throw new Error(`${group} / ${source.name}: ${problem}.`);
+      };
 
-      if (!CATEGORIES[source.category]) fail(`unknown category "${source.category}"`);
+      if (!CATEGORIES[source.category]) {
+        fail(`unknown category "${source.category}"`);
+      }
       if (source.reroute && !CATEGORIES[source.reroute.category]) {
         fail(`unknown reroute category "${source.reroute.category}"`);
       }
       if (!source.subject) fail('missing subject pattern');
-      if (!source.amount && !source.usd && !source.items) fail('missing amount pattern');
-      if (source.items && !source.items.global) fail('items pattern needs the g flag');
+      if (!source.amount && !source.usd && !source.items) {
+        fail('missing amount pattern');
+      }
+      if (source.items && !source.items.global) {
+        fail('items pattern needs the g flag');
+      }
       if (!source.status) fail('missing status');
       if (source.anySender && !source.query) fail('missing query');
       result.push(source);
