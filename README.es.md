@@ -155,6 +155,8 @@ página donde hay que hacer algo a mano:
    Time-driven, Hour timer, Every hour" width="480">
 
 Se puede correr de nuevo en cualquier momento: saltea lo que ya está hecho.
+Los pasos del browser que terminó quedan en `.setup-done` (ignorado por git);
+borrarlo los repite.
 
 Después, cada cambio sube con `./deploy-script.sh` (inicia sesión de su propio
 usuario de `clasp` como `CLASP_ACCOUNT` de `.env` si hace falta, corre

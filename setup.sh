@@ -39,6 +39,14 @@ script_id() {
   sed -n 's/.*"scriptId": *"\([^"]*\)".*/\1/p' .clasp.json
 }
 
+# Browser steps can't be checked from here, so each one finished is written
+# to this git-ignored file and skipped on the next run. Project steps carry
+# the script ID, so a new project goes through them again. Deleting the
+# file repeats them all.
+DONE_FILE=.setup-done
+done_before() { [[ -f $DONE_FILE ]] && grep -qxF "$1" "$DONE_FILE"; }
+mark_done() { printf '%s\n' "$1" >> "$DONE_FILE"; }
+
 # 1. clasp -------------------------------------------------------------------
 
 step "clasp (Google's CLI for Apps Script)"
@@ -62,9 +70,14 @@ else
 fi
 
 step "Apps Script API"
-info "Turn on \"Google Apps Script API\" (clasp needs it to upload code)."
-open_url "https://script.google.com/home/usersettings"
-pause
+if done_before api; then
+  info "Already turned on."
+else
+  info "Turn on \"Google Apps Script API\" (clasp needs it to upload code)."
+  open_url "https://script.google.com/home/usersettings"
+  pause
+  mark_done api
+fi
 
 # 2. Apps Script project -------------------------------------------------------
 
@@ -95,27 +108,37 @@ clasp push --force
 # 3. The sheet -----------------------------------------------------------------
 
 step "Google Sheet"
-info "Create a sheet (or use an existing one), and set"
-info "File → Settings → Locale to Argentina."
-open_url "https://sheets.new"
-read -rp "  Paste the sheet's URL (or its ID): " url
-file_id=$(printf '%s' "$url" | sed -E 's#.*/d/([^/?#]+).*#\1#')
-[[ -n "$file_id" ]] || fail "Couldn't read an ID from that URL."
+if done_before "sheet $(script_id)"; then
+  info "Already set in Script Properties."
+else
+  info "Create a sheet (or use an existing one), and set"
+  info "File → Settings → Locale to Argentina."
+  open_url "https://sheets.new"
+  read -rp "  Paste the sheet's URL (or its ID): " url
+  file_id=$(printf '%s' "$url" | sed -E 's#.*/d/([^/?#]+).*#\1#')
+  [[ -n "$file_id" ]] || fail "Couldn't read an ID from that URL."
 
-step "Script Properties"
-info "In Project Settings → Script Properties, add a property named"
-info "FILE_ID with the sheet's ID as its value."
-copy "$file_id"
-open_url "https://script.google.com/home/projects/$(script_id)/settings"
-pause
+  step "Script Properties"
+  info "In Project Settings → Script Properties, add a property named"
+  info "FILE_ID with the sheet's ID as its value."
+  copy "$file_id"
+  open_url "https://script.google.com/home/projects/$(script_id)/settings"
+  pause
+  mark_done "sheet $(script_id)"
+fi
 
 # 4. The trigger ---------------------------------------------------------------
 
 step "Trigger"
-info "In the editor, pick install in the function menu, click Run and"
-info "accept the permissions. It creates the hourly trigger."
-open_url "https://script.google.com/home/projects/$(script_id)/edit"
-pause
+if done_before "trigger $(script_id)"; then
+  info "Already installed."
+else
+  info "In the editor, pick install in the function menu, click Run and"
+  info "accept the permissions. It creates the hourly trigger."
+  open_url "https://script.google.com/home/projects/$(script_id)/edit"
+  pause
+  mark_done "trigger $(script_id)"
+fi
 
 printf '\n%s✔ Done.%s From now on, every change is a clasp push.\n' \
   "$bold" "$reset"

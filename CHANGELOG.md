@@ -37,5 +37,7 @@ and 1.1.0 is January 2027. An extra release within a month bumps the patch.
   `Servicios` column keep it.
 - **Project:** the Apps Script code lives in `source/`, which is what
   `clasp push` uploads.
+- **Setup:** `setup.sh` remembers the browser steps it finished and skips
+  them when run again.
 
 [Unreleased]: https://github.com/victormarcias/gmail-expenses/commits/develop

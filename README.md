@@ -146,7 +146,9 @@ page where something has to be done by hand:
    <img src="images/trigger.png" alt="Apps Script trigger: run, Time-driven,
    Hour timer, Every hour" width="480">
 
-It can be run again at any time: it skips what's already done.
+It can be run again at any time: it skips what's already done. The browser
+steps it finished are kept in `.setup-done` (git-ignored); deleting it
+repeats them.
 
 After that, every change goes up with `./deploy-script.sh` (it signs its own
 `clasp` user in as `CLASP_ACCOUNT` from `.env` if needed, runs `clasp push` and

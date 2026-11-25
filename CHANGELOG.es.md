@@ -38,5 +38,7 @@ Las versiones son `<años desde 2026>.<mes>.<parche>`: 0.11.0 es noviembre de
   Las pestañas que ya tienen una columna `Servicios` la conservan.
 - **Proyecto:** el código de Apps Script vive en `source/`, que es lo que
   sube `clasp push`.
+- **Setup:** `setup.sh` recuerda los pasos del browser que terminó y los
+  saltea al correrlo de nuevo.
 
 [Unreleased]: https://github.com/victormarcias/gmail-expenses/commits/develop
