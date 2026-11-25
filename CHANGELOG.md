@@ -45,5 +45,7 @@ and 1.1.0 is January 2027. An extra release within a month bumps the patch.
 - **Adjusted receipts:** only an earlier receipt from the same sender makes
   an email an adjusted receipt. A reply or another email in the thread no
   longer drops a real receipt.
+- **TOTAL:** a TOTAL row left among the data by rows added by hand below it
+  is removed, so totals aren't counted twice.
 
 [Unreleased]: https://github.com/victormarcias/gmail-expenses/commits/develop

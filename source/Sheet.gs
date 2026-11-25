@@ -19,11 +19,9 @@ function writeRows(spreadsheet, month, rows) {
   const width = tabHeaders.length;
   const col = (header) => tabHeaders.indexOf(header) + 1;
 
-  // The TOTAL row is rebuilt after sorting
-  const lastRow = sheet.getLastRow();
-  if (lastRow > 1 && sheet.getRange(lastRow, col('Fecha')).getValue() === TOTAL_LABEL) {
-    sheet.deleteRow(lastRow);
-  }
+  // The TOTAL row is rebuilt after sorting. Rows added by hand below it
+  // leave it inside the data, so it's looked for in every row.
+  deleteTotalRows(sheet, col('Fecha'));
 
   const values = rows.map((row) => tabHeaders.map((header) => cellValue(row, header)));
   const notes = rows.map((row) => tabHeaders.map((header) => (header === row.category ? row.note : '')));
@@ -71,6 +69,17 @@ function cellValue(row, header) {
     case 'Vencimiento': return row.due || '';
     case 'Estado': return row.status;
     default: return header === row.category ? row.ars : '';
+  }
+}
+
+// Deletes every TOTAL row, bottom up so the row numbers still to delete
+// don't shift.
+function deleteTotalRows(sheet, fechaColumn) {
+  const dataRows = sheet.getLastRow() - 1;
+  if (dataRows < 1) return;
+  const fechas = sheet.getRange(2, fechaColumn, dataRows, 1).getValues();
+  for (let index = fechas.length - 1; index >= 0; index--) {
+    if (fechas[index][0] === TOTAL_LABEL) sheet.deleteRow(index + 2);
   }
 }
 

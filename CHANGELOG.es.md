@@ -46,5 +46,7 @@ Las versiones son `<años desde 2026>.<mes>.<parche>`: 0.11.0 es noviembre de
 - **Recibos ajustados:** solo un recibo anterior del mismo remitente hace que
   un mail sea un recibo ajustado. Una respuesta u otro mail del hilo ya no
   descarta un recibo real.
+- **TOTAL:** se borra la fila TOTAL que queda entre los datos cuando se
+  agregan filas a mano debajo, así los totales no se cuentan dos veces.
 
 [Unreleased]: https://github.com/victormarcias/gmail-expenses/commits/develop
