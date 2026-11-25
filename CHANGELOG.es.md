@@ -41,4 +41,10 @@ Las versiones son `<años desde 2026>.<mes>.<parche>`: 0.11.0 es noviembre de
 - **Setup:** `setup.sh` recuerda los pasos del browser que terminó y los
   saltea al correrlo de nuevo.
 
+### Corregido
+
+- **Recibos ajustados:** solo un recibo anterior del mismo remitente hace que
+  un mail sea un recibo ajustado. Una respuesta u otro mail del hilo ya no
+  descarta un recibo real.
+
 [Unreleased]: https://github.com/victormarcias/gmail-expenses/commits/develop

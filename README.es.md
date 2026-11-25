@@ -40,8 +40,9 @@ son `Fecha`, `Detalle`, `Hogar`, `Suscripciones`, `Salud`, `Tarjetas`,
 - Una fila por transacción, ordenada por fecha del mail (`Fecha`), con el
   nombre del remitente en `Detalle` (`Uber`) y el monto en su columna de
   categoría.
-- Un mail del mismo hilo que llega dentro de `ADJUSTED_RECEIPT_HOURS` de uno
-  anterior (un recibo ajustado) no agrega fila: queda el primer monto.
+- Un mail del mismo hilo que llega dentro de `ADJUSTED_RECEIPT_HOURS` de un
+  recibo anterior del mismo remitente (un recibo ajustado) no agrega fila:
+  queda el primer monto.
 - `USD`: el monto original de los cargos en USD. La misma fila tiene también el
   monto en pesos en su categoría, al dólar que fija `USD_RATE` (cripto por
   defecto) de [DolarApi](https://dolarapi.com).

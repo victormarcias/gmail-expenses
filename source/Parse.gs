@@ -14,7 +14,9 @@ function parseMessage(source, message) {
     source = { ...source, name: reroute.name, category: reroute.category };
   }
 
-  if (isAdjustedReceipt(message)) return { rows: [], skip: 'adjusted receipt of an earlier email in its thread' };
+  if (isAdjustedReceipt(source, message)) {
+    return { rows: [], skip: 'adjusted receipt of an earlier receipt' };
+  }
   if (source.skipIf && source.skipIf.test(body)) return { rows: [], skip: 'skipIf matched' };
   if (source.onlyIf && !source.onlyIf.test(body)) return { review: 'onlyIf did not match' };
 
@@ -79,16 +81,28 @@ function senderName(message) {
   return name || from.replace(/[<>]/g, '').trim();
 }
 
-// An email that comes within ADJUSTED_RECEIPT_HOURS after an earlier one of its
-// thread is an adjusted receipt: the first email's amount is the one
-// that counts. Monthly emails that share a thread are too far apart for it.
-function isAdjustedReceipt(message) {
+// An email that comes within ADJUSTED_RECEIPT_HOURS after an earlier receipt
+// of its thread is an adjusted receipt: the first email's amount is the one
+// that counts. Only earlier emails from the same sender whose subject the
+// source matches are receipts; replies and other emails of the thread don't
+// count. Monthly emails that share a thread are too far apart for it.
+function isAdjustedReceipt(source, message) {
   const limit = ADJUSTED_RECEIPT_HOURS * 3600 * 1000;
   const date = message.getDate().getTime();
+  const sender = senderAddress(message);
   return message.getThread().getMessages().some((other) => {
     const gap = date - other.getDate().getTime();
-    return gap > 0 && gap < limit;
+    return gap > 0 && gap < limit
+      && senderAddress(other) === sender
+      && source.subject.test(other.getSubject());
   });
+}
+
+// The sender's email address alone, lowercased
+function senderAddress(message) {
+  const from = message.getFrom();
+  const match = from.match(/<([^>]+)>/);
+  return (match ? match[1] : from).trim().toLowerCase();
 }
 
 // The category of the first non-payment sender whose name is in `text`
