@@ -17,14 +17,14 @@ It only reads the email body, never PDF attachments.
 | Column | Senders | Estado |
 |---|---|---|
 | 🏠 Hogar | Payments to `BILLS` (electricity, gas, water, municipal taxes, phone, internet and TV). Their bills (and home insurance and bank invoices due) are read | Pagar for bills, Pagado for payments |
-| 🔁 Suscripciones | `SUBSCRIPTIONS`: digital services (streaming, music, games, apps, cloud, AI). Their receipts, ARS or USD, credit card charges skipped | Pagado |
-| 🩺 Salud | `PREPAGAS` (health insurance), paid by automatic debit | Pagado |
+| 🖥️ Suscripciones | `SUBSCRIPTIONS`: digital services (streaming, music, games, apps, cloud, AI). Their receipts, ARS or USD, credit card charges skipped | Pagado |
+| 💊 Salud | `PREPAGAS` (health insurance), paid by automatic debit | Pagado |
 | 💳 Tarjetas | `CREDIT_CARDS` (credit card statements only, not account statements: one row per balance, ARS and USD) | Pagar |
-| 🚕 Transporte | Uber, Cabify | Pagado |
-| 🛒 Compras | MercadoLibre, only debit / account money purchases; payments and transfers to anyone not known (see below) | Pagado |
-| 🧾 Otros | Payment confirmations from any other sender (gateways, shops: "Tu pago ha sido acreditado a X", "Pago aprobado"), never from a known one | Pagado |
-| 🥦 Supermercado | PedidosYa Market, Jumbo, Disco, Vea, Coto, Carrefour, Día, ChangoMâs, La Anónima | Pagado |
-| 🛵 Delivery | PedidosYa (orders and Plus, not Market), Rappi (orders and Prime), Uber Eats | Pagado |
+| 🚗 Transporte | Uber, Cabify | Pagado |
+| 🎁 Compras | MercadoLibre, only debit / account money purchases; payments and transfers to anyone not known (see below) | Pagado |
+| 📦 Otros | Payment confirmations from any other sender (gateways, shops: "Tu pago ha sido acreditado a X", "Pago aprobado"), never from a known one | Pagado |
+| 🥑 Supermercado | PedidosYa Market, Jumbo, Disco, Vea, Coto, Carrefour, Día, ChangoMâs, La Anónima | Pagado |
+| 🍔 Delivery | PedidosYa (orders and Plus, not Market), Rappi (orders and Prime), Uber Eats | Pagado |
 
 ## The sheet
 

@@ -17,14 +17,14 @@ Solo lee el cuerpo del mail, nunca los PDF adjuntos.
 | Columna | Remitentes | Estado |
 |---|---|---|
 | 🏠 Hogar | Pagos a `BILLS` (luz, gas, agua, impuestos municipales, teléfono, internet y TV). Se leen sus facturas (y las del seguro del hogar y los vencimientos de facturas del banco) | Pagar para facturas, Pagado para pagos |
-| 🔁 Suscripciones | `SUBSCRIPTIONS`: servicios digitales (streaming, música, juegos, apps, cloud, IA). Sus recibos, en ARS o USD, sin los cargos de tarjeta de crédito | Pagado |
-| 🩺 Salud | `PREPAGAS` (cobertura de salud), pagadas por débito automático | Pagado |
+| 🖥️ Suscripciones | `SUBSCRIPTIONS`: servicios digitales (streaming, música, juegos, apps, cloud, IA). Sus recibos, en ARS o USD, sin los cargos de tarjeta de crédito | Pagado |
+| 💊 Salud | `PREPAGAS` (cobertura de salud), pagadas por débito automático | Pagado |
 | 💳 Tarjetas | `CREDIT_CARDS` (solo resúmenes de tarjeta de crédito, no de cuenta: una fila por saldo, ARS y USD) | Pagar |
-| 🚕 Transporte | Uber, Cabify | Pagado |
-| 🛒 Compras | MercadoLibre, solo compras con débito / dinero en cuenta; pagos y transferencias a cualquiera que no se conozca (ver abajo) | Pagado |
-| 🧾 Otros | Confirmaciones de pago de cualquier otro remitente (gateways, tiendas: "Tu pago ha sido acreditado a X", "Pago aprobado"), nunca de uno conocido | Pagado |
-| 🥦 Supermercado | PedidosYa Market, Jumbo, Disco, Vea, Coto, Carrefour, Día, ChangoMâs, La Anónima | Pagado |
-| 🛵 Delivery | PedidosYa (pedidos y Plus, no Market), Rappi (pedidos y Prime), Uber Eats | Pagado |
+| 🚗 Transporte | Uber, Cabify | Pagado |
+| 🎁 Compras | MercadoLibre, solo compras con débito / dinero en cuenta; pagos y transferencias a cualquiera que no se conozca (ver abajo) | Pagado |
+| 📦 Otros | Confirmaciones de pago de cualquier otro remitente (gateways, tiendas: "Tu pago ha sido acreditado a X", "Pago aprobado"), nunca de uno conocido | Pagado |
+| 🥑 Supermercado | PedidosYa Market, Jumbo, Disco, Vea, Coto, Carrefour, Día, ChangoMâs, La Anónima | Pagado |
+| 🍔 Delivery | PedidosYa (pedidos y Plus, no Market), Rappi (pedidos y Prime), Uber Eats | Pagado |
 
 ## La planilla
 
