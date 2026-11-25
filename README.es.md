@@ -103,8 +103,10 @@ porque se asume que se pagan con débito o dinero en cuenta.
 [WebAppPage.html](source/WebAppPage.html) es una página de una pantalla:
 elegís la categoría, escribís el precio y tocás Agregar. Escribe una fila
 `Pagado` en la pestaña del mes actual, con el campo Detalle como detalle
-(`Manual` si no se edita). Mientras la corrida automática escanea, la página
-muestra "Corrida automática en curso…" y agrega la fila cuando termina.
+(`Detalle` si no se edita). Los montos de más de 1.000.000 se rechazan, para
+atajar un cero de más tipeado por error. Mientras la corrida automática
+escanea, la página muestra "Corrida automática en curso…" y agrega la fila
+cuando termina.
 
 La sirve el propio script como web app que solo su dueño puede abrir, así que
 el inicio de sesión de Google es la única autenticación. Para abrirla en el

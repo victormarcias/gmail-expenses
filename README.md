@@ -97,8 +97,9 @@ or account money.
 
 [WebAppPage.html](source/WebAppPage.html) is a one-screen page: pick a
 category, type the price and tap Add. It writes a `Pagado` row into the
-current month's tab, with the Detalle field as its detail (`Manual` unless
-edited). While the automatic run is scanning, the page shows "Corrida
+current month's tab, with the Detalle field as its detail (`Detalle` unless
+edited). Amounts over 1,000,000 are rejected, to catch a mistyped extra
+zero. While the automatic run is scanning, the page shows "Corrida
 automática en curso…" and adds the row when it ends.
 
 It is served by the script itself as a web app only its owner can open, so
