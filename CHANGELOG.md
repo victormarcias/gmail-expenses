@@ -10,6 +10,8 @@ and 1.1.0 is January 2027. An extra release within a month bumps the patch.
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-11-26
+
 ### Added
 
 - **Manual entry:** a one-screen web page (category, detail, price, Add) that
@@ -50,4 +52,5 @@ and 1.1.0 is January 2027. An extra release within a month bumps the patch.
 - **TOTAL:** a TOTAL row left among the data by rows added by hand below it
   is removed, so totals aren't counted twice.
 
-[Unreleased]: https://github.com/victormarcias/gmail-expenses/commits/develop
+[Unreleased]: https://github.com/victormarcias/gmail-expenses/compare/0.11.0...HEAD
+[0.11.0]: https://github.com/victormarcias/gmail-expenses/releases/tag/0.11.0

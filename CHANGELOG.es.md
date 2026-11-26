@@ -11,6 +11,8 @@ Las versiones son `<años desde 2026>.<mes>.<parche>`: 0.11.0 es noviembre de
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-11-26
+
 ### Agregado
 
 - **Carga manual:** una página web de una pantalla (categoría, detalle,
@@ -51,4 +53,5 @@ Las versiones son `<años desde 2026>.<mes>.<parche>`: 0.11.0 es noviembre de
 - **TOTAL:** se borra la fila TOTAL que queda entre los datos cuando se
   agregan filas a mano debajo, así los totales no se cuentan dos veces.
 
-[Unreleased]: https://github.com/victormarcias/gmail-expenses/commits/develop
+[Unreleased]: https://github.com/victormarcias/gmail-expenses/compare/0.11.0...HEAD
+[0.11.0]: https://github.com/victormarcias/gmail-expenses/releases/tag/0.11.0
