@@ -18,8 +18,7 @@ local senders. Only the email body is read, never attachments.
 | `source/WebApp.gs` | `doGet()` serves `WebAppPage.html`; `addExpense()` writes a manual row |
 | `source/WebAppPage.html` | Manual entry page: category, detail, price, Add |
 | `setup.sh` | Guided install: clasp, project, push, then opens each browser step |
-| `deploy-webapp.sh` | Deploys the web app (creates it, or moves it to a new version) and prints its URL |
-| `deploy-script.sh` | `login.sh`, then `clasp push` and opening the project in the browser |
+| `deploy.sh` | `login.sh`, `clasp push`, then the web app (created, or moved to a new version) and its URL; `--open` opens the project |
 | `login.sh` | Signs clasp in as `CLASP_ACCOUNT` from `.env` (git-ignored; template `.env.example`) |
 | `source/appsscript.json` | Time zone (Buenos Aires), Gmail advanced service, V8 |
 | `images/` | README logo, square favicon (`favicon.png`) and screenshots |
@@ -74,10 +73,10 @@ local senders. Only the email body is read, never attachments.
   re-runnable: each step skips itself when done. It avoids leaving
   `clasp create-script`'s overwritten `appsscript.json` and sample `Code.js`.
   Keep README's Setup in step with it.
-- Deploy: `./deploy-script.sh` or `clasp push` (`rootDir` is `source/`; only its
-  `*.gs`, `*.html` and `appsscript.json` go up, per `.claspignore`). The
-  user runs it; editing in the web editor and locally at once makes one
-  overwrite the other. The web app goes up with `./deploy-webapp.sh`.
+- Deploy: `./deploy.sh` (`rootDir` is `source/`; only its `*.gs`, `*.html`
+  and `appsscript.json` go up, per `.claspignore`). It pushes the code and
+  moves the web app to a new version. The user runs it; editing in the web
+  editor and locally at once makes one overwrite the other.
 - No test suite. Static check: copy a `.gs` to `.js` in the scratchpad and
   run `node --check` on it. Real behavior is checked by the user with
   `dryRun()`.

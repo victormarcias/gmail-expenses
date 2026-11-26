@@ -10,6 +10,12 @@ and 1.1.0 is January 2027. An extra release within a month bumps the patch.
 
 ## [Unreleased]
 
+### Changed
+
+- **Deploy:** `deploy.sh` replaces `deploy-script.sh` and
+  `deploy-webapp.sh`: every deploy also updates the web app, and `--open`
+  opens the project.
+
 ## [0.11.0] - 2026-11-26
 
 ### Added

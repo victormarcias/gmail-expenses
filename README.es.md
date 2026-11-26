@@ -114,15 +114,15 @@ La sirve el propio script como web app que solo su dueño puede abrir, así que
 el inicio de sesión de Google es la única autenticación. Para abrirla en el
 celular:
 
-1. Corré `./deploy-webapp.sh`. Sube el código, crea la web app y copia su URL
+1. Corré `./deploy.sh`. Sube el código, crea la web app y copia su URL
    (termina en `/exec`).
 2. Mandá la URL al celular (AirDrop, una nota, un mensaje a vos mismo).
 3. Abrila en Safari o Chrome e iniciá sesión en Google una sola vez.
 4. *Compartir → Agregar a pantalla de inicio*: se abre como una app, ya con
    la sesión iniciada.
 
-Después de un cambio en la página, corré `./deploy-webapp.sh` de nuevo:
-publica una versión nueva y la URL no cambia.
+Cada `./deploy.sh` publica una versión nueva de la página, y la URL no
+cambia.
 
 ## Instalación
 
@@ -157,9 +157,9 @@ Se puede correr de nuevo en cualquier momento: saltea lo que ya está hecho.
 Los pasos del browser que terminó quedan en `.setup-done` (ignorado por git);
 borrarlo los repite.
 
-Después, cada cambio sube con `./deploy-script.sh` (inicia sesión de su propio
+Después, cada cambio sube con `./deploy.sh` (inicia sesión de su propio
 usuario de `clasp` como `CLASP_ACCOUNT` de `.env` si hace falta, corre
-`clasp push` y abre el proyecto). Antes copiá `.env.example` a `.env`. Para
+`clasp push` y actualiza la web app). Antes copiá `.env.example` a `.env`. Para
 procesar de inmediato, corré `run()` desde el editor.
 
 > ⚠️ Editá en local, no en el editor web: `clasp push` pisa lo que se haya
@@ -178,7 +178,7 @@ Solo los IDs van en Script Properties.
 
 ### Probar cambios
 
-Después de un cambio, corré `./deploy-script.sh` y después `dryRun()` desde
+Después de un cambio, corré `./deploy.sh --open` y después `dryRun()` desde
 el editor: loguea lo que haría `run()` con los mails sin label de la bandeja
 de entrada, más los que tienen label de las últimas `DRY_RUN_HOURS`, sin
 poner labels ni tocar la planilla.

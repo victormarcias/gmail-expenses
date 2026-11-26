@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Gmail Expenses: installs the manual entry web app. Uploads the code, then
-# creates the web app deployment the first time, or moves the existing one to
-# a new version, so the URL never changes. Prints the URL and copies it.
+# Gmail Expenses: deploys the code to Apps Script. Uploads it, then creates
+# the manual entry web app the first time, or moves it to a new version, so
+# its URL never changes. Prints the URL and copies it. With --open it also
+# opens the project in the browser, to run dryRun() there.
 # author: @victormarcias
 #
-# Usage: ./deploy-webapp.sh
-# Run it again after every change to the web app files.
+# Usage: ./deploy.sh [--open]
 
 set -euo pipefail
 cd "$(dirname "$0")"
@@ -16,6 +16,13 @@ command -v clasp >/dev/null \
 clasp() { command clasp --user gmail-expenses "$@"; }
 
 DESCRIPTION="Gmail Expenses web app"
+
+open=false
+case "${1:-}" in
+  '') ;;
+  --open) open=true ;;
+  *) echo "Usage: ./deploy.sh [--open]" >&2; exit 1 ;;
+esac
 
 ./login.sh
 clasp push --force
@@ -46,3 +53,5 @@ cat <<MSG
 On the phone: open it in Safari or Chrome, sign in to Google once, then
 Share → Add to Home Screen.
 MSG
+
+if $open; then clasp open-script; fi

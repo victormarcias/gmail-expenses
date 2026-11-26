@@ -107,14 +107,14 @@ automática en curso…" and adds the row when it ends.
 It is served by the script itself as a web app only its owner can open, so
 Google's sign-in is the only authentication. To open it on the phone:
 
-1. Run `./deploy-webapp.sh`. It uploads the code, creates the web app and
-   copies its URL (it ends in `/exec`).
+1. Run `./deploy.sh`. It uploads the code, creates the web app and copies
+   its URL (it ends in `/exec`).
 2. Send the URL to the phone (AirDrop, a note, a message to yourself).
 3. Open it in Safari or Chrome and sign in to Google once.
 4. *Share → Add to Home Screen*: it opens like an app, already signed in.
 
-After a change to the page, run `./deploy-webapp.sh` again: it publishes a new
-version and the URL stays the same.
+Every `./deploy.sh` publishes a new version of the page, and the URL stays the
+same.
 
 ## Setup
 
@@ -149,9 +149,9 @@ It can be run again at any time: it skips what's already done. The browser
 steps it finished are kept in `.setup-done` (git-ignored); deleting it
 repeats them.
 
-After that, every change goes up with `./deploy-script.sh` (it signs its own
-`clasp` user in as `CLASP_ACCOUNT` from `.env` if needed, runs `clasp push` and
-opens the project). Copy `.env.example` to `.env` first. To process right
+After that, every change goes up with `./deploy.sh` (it signs its own `clasp`
+user in as `CLASP_ACCOUNT` from `.env` if needed, runs `clasp push` and updates
+the web app). Copy `.env.example` to `.env` first. To process right
 away, run `run()` from the editor.
 
 > ⚠️ Edit locally, not in the web editor: `clasp push` overwrites whatever
@@ -170,7 +170,7 @@ Only IDs go in Script Properties.
 
 ### Testing changes
 
-After a change, run `./deploy-script.sh`, then run `dryRun()` from the
+After a change, run `./deploy.sh --open`, then run `dryRun()` from the
 editor: it logs what `run()` would do with the unlabeled inbox emails, plus the
 labeled ones from the last `DRY_RUN_HOURS`, without labeling anything or
 touching the sheet.

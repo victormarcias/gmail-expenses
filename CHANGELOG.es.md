@@ -11,6 +11,12 @@ Las versiones son `<años desde 2026>.<mes>.<parche>`: 0.11.0 es noviembre de
 
 ## [Unreleased]
 
+### Cambiado
+
+- **Deploy:** `deploy.sh` reemplaza a `deploy-script.sh` y
+  `deploy-webapp.sh`: cada deploy también actualiza la web app, y `--open`
+  abre el proyecto.
+
 ## [0.11.0] - 2026-11-26
 
 ### Agregado
