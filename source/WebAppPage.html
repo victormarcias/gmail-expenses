@@ -3,7 +3,8 @@
 <head>
   <base target="_top">
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, viewport-fit=cover">
   <style>
     * { box-sizing: border-box; }
     html { overscroll-behavior: none; }
@@ -24,9 +25,12 @@
     }
     /* Category grid: one colored button per category. The chosen one stays
        pressed (a little smaller) with a ring around it. */
-    #categories { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    #categories {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+    }
     .cat {
-      padding: 0; border: 0; aspect-ratio: 1 / .85; font-size: 30px; line-height: 1;
+      padding: 0; border: 0; aspect-ratio: 1 / .85;
+      font-size: 30px; line-height: 1;
       transition: transform .15s ease, outline-offset .15s ease;
       outline: 3px solid transparent; outline-offset: 0;
     }
@@ -47,10 +51,16 @@
     #add .state { display: inline-flex; align-items: center; gap: .4em;
                   animation: swap .25s ease; }
     @keyframes swap { from { opacity: 0; transform: translateY(6px); } }
-    #add svg { width: 1.3em; height: 1.3em; animation: pop .35s cubic-bezier(.2, 1.6, .4, 1); }
+    #add svg {
+      width: 1.3em; height: 1.3em;
+      animation: pop .35s cubic-bezier(.2, 1.6, .4, 1);
+    }
     @keyframes pop { from { transform: scale(0); } }
-    .dots i { display: inline-block; width: .3em; height: .3em; margin-left: .2em;
-              border-radius: 50%; background: currentColor; animation: blink 1s infinite; }
+    .dots i {
+      display: inline-block; width: .3em; height: .3em; margin-left: .2em;
+      border-radius: 50%; background: currentColor;
+      animation: blink 1s infinite;
+    }
     .dots i:nth-child(2) { animation-delay: .15s; }
     .dots i:nth-child(3) { animation-delay: .3s; }
     @keyframes blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
@@ -78,27 +88,32 @@
   <main>
     <img class="logo" src="<?= logoUrl ?>" alt="Gmail Expenses">
     <div id="categories" role="group" aria-label="Categoría">
-      <div class="loading">Cargando categorías<span class="dots"><i></i><i></i><i></i></span></div>
+      <div class="loading">
+        Cargando categorías<span class="dots"><i></i><i></i><i></i></span>
+      </div>
     </div>
     <div id="chosen" aria-live="polite"></div>
     <input id="detail" placeholder="Detalle" autocomplete="off"
            aria-label="Detalle">
-    <input id="amount" inputmode="numeric" placeholder="Precio" autocomplete="off"
-           aria-label="Precio">
+    <input id="amount" inputmode="numeric" placeholder="Precio"
+           autocomplete="off" aria-label="Precio">
     <button id="add" disabled><span class="state">Agregar</span></button>
     <div id="msg"></div>
   </main>
 
   <script>
     const $ = (id) => document.getElementById(id);
-    const grid = $('categories'), chosen = $('chosen'), detail = $('detail'), amount = $('amount'), add = $('add'), msg = $('msg');
+    const grid = $('categories'), chosen = $('chosen'), detail = $('detail');
+    const amount = $('amount'), add = $('add'), msg = $('msg');
 
     // Google's Material Symbols (Apache 2.0)
-    const icon = (path) => '<svg viewBox="0 -960 960 960" fill="currentColor">' +
+    const icon = (path) =>
+      '<svg viewBox="0 -960 960 960" fill="currentColor">' +
       `<path d="${path}"/></svg>`;
 
     // The Add button tells the story itself: Agregar → Agregando… → ✓ Agregado
-    const CHECK_ICON = icon('M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z');
+    const CHECK_ICON =
+      icon('M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z');
     const ADD_STATES = {
       idle: 'Agregar',
       loading: 'Agregando<span class="dots"><i></i><i></i><i></i></span>',
@@ -108,7 +123,8 @@
 
     // Add only works when idle, with a category chosen and a price typed
     function refreshAdd() {
-      add.disabled = addState !== 'idle' || !category || !digitsOf(amount.value);
+      add.disabled =
+        addState !== 'idle' || !category || !digitsOf(amount.value);
     }
 
     function setAdd(state) {
@@ -128,7 +144,10 @@
       if (!e.target.closest('input')) document.activeElement.blur();
     });
 
-    function show(text, kind) { msg.textContent = text; msg.className = kind || ''; }
+    function show(text, kind) {
+      msg.textContent = text;
+      msg.className = kind || '';
+    }
 
     // Whole pesos only: the field keeps the digits and shows them as a price
     const digitsOf = (text) => text.replace(/\D/g, '').replace(/^0+/, '');
@@ -171,7 +190,9 @@
           button.setAttribute('aria-label', c.name);
           button.setAttribute('aria-pressed', 'false');
           button.addEventListener('click', () => {
-            for (const other of grid.children) other.setAttribute('aria-pressed', 'false');
+            for (const other of grid.children) {
+              other.setAttribute('aria-pressed', 'false');
+            }
             button.setAttribute('aria-pressed', 'true');
             category = c.name;
             chosen.textContent = c.name;
@@ -180,7 +201,10 @@
           grid.appendChild(button);
         }
       })
-      .withFailureHandler((e) => { grid.replaceChildren(); show(e.message, 'err'); })
+      .withFailureHandler((e) => {
+        grid.replaceChildren();
+        show(e.message, 'err');
+      })
       .getCategories();
 
     add.addEventListener('click', (e) => {

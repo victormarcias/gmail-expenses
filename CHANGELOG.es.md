@@ -35,8 +35,17 @@ Las versiones son `<años desde 2026>.<mes>.<parche>`: 0.11.0 es noviembre de
 - **Facturas:** las facturas en cuotas de AYSAM dan una fila Pagar por cuota.
 - **Categorías:** `Servicios` ya no existe. Las facturas de teléfono,
   internet y TV van a `Hogar`, y los servicios digitales a `Suscripciones`.
-  Las pestañas que ya tienen una columna `Servicios` la conservan.
 - **Proyecto:** el código de Apps Script vive en `source/`, que es lo que
   sube `clasp push`.
+- **Setup:** `setup.sh` recuerda los pasos del browser que terminó y los
+  saltea al correrlo de nuevo.
+
+### Corregido
+
+- **Recibos ajustados:** solo un recibo anterior del mismo remitente hace que
+  un mail sea un recibo ajustado. Una respuesta u otro mail del hilo ya no
+  descarta un recibo real.
+- **TOTAL:** se borra la fila TOTAL que queda entre los datos cuando se
+  agregan filas a mano debajo, así los totales no se cuentan dos veces.
 
 [Unreleased]: https://github.com/victormarcias/gmail-expenses/commits/develop

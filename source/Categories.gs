@@ -20,7 +20,14 @@ const STATUS_PAID = 'Pagado';
 // "AR$", but not "US$" or "U$S". The keyword must start a word, so a
 // subtotal isn't taken for the total.
 const PESOS = /(?:ARS\s*\$?|AR\$|(?<!US|U)\$)/.source;
-const AMOUNT_ARS = new RegExp(`\\b(?:total(?: a pagar)?|importe|monto|saldo actual)[^\\d$]{0,40}?${PESOS}\\s*([\\d.,]+)`, 'i');
+// A pesos amount up to 40 characters after one of `keywords`, an alternation
+// that must start a word
+function amountAfter(keywords) {
+  return new RegExp(
+    `\\b(?:${keywords})[^\\d$]{0,40}?${PESOS}\\s*([\\d.,]+)`, 'i');
+}
+const AMOUNT_KEYWORDS = 'total(?: a pagar)?|importe|monto|saldo actual';
+const AMOUNT_ARS = amountAfter(AMOUNT_KEYWORDS);
 const AMOUNT_USD = /(?:U\$S|US\$|USD)\s*([\d.,]+)/i;
 const DUE_DATE = /venc(?:imiento|e)[^\d]{0,40}(\d{1,2}\/\d{1,2}\/\d{2,4})/i;
 
@@ -29,7 +36,10 @@ const DUE_DATE = /venc(?:imiento|e)[^\d]{0,40}(\d{1,2}\/\d{1,2}\/\d{2,4})/i;
 const CREDIT_CARD = /tarjeta de cr[eé]dito|credit card|cuotas/i;
 
 // Subject of a receipt (as opposed to a bill or a promo)
-const RECEIPT = /recibo|pago|factura|cobro|compra|pagaste|receipt|purchase|payment/i;
+const RECEIPT = new RegExp([
+  'recibo', 'pago', 'factura', 'cobro', 'compra', 'pagaste', 'receipt',
+  'purchase', 'payment',
+].join('|'), 'i');
 
 // Subject of a payment email that isn't money going out: money coming in,
 // refunds, and failed or pending payments
@@ -40,15 +50,16 @@ const NOT_PAID = new RegExp([
 
 // Credit card statements (resumen de tarjeta).
 const CREDIT_CARDS = [
-  // Value first, then its label: "11 Noviembre 2026 Fecha de vencimiento
-  // $ 50.079,83 Saldo en pesos U$S 88,84 Saldo en dólares"
+  // Value first, then its label: the due date, the pesos balance and the USD
+  // balance each come before the text that names them.
   {
     name: 'Brubank',
     amount: /(?<!U)\$\s*([\d.,]+)\s*Saldo en pesos/i,
     usd: /(?:U\$S|US\$|USD)\s*([\d.,]+)\s*Saldo en d[oó]lares/i,
     due: /(\d{1,2}\s+[a-z]+\s+\d{4})\s*Fecha de vencimiento/i,
   },
-  // "Saldo en pesos: 68.314,43" (no $), "Vencimiento: 11 Nov 26"
+  // Label first, then its value: the pesos balance has no $ sign, and the due
+  // date has a short month name.
   {
     name: 'Galicia',
     amount: /Saldo en pesos:\s*\$?\s*([\d.,]+)/i,
@@ -63,11 +74,12 @@ const CREDIT_CARDS = [
   { name: 'Ciudad', from: 'bancociudad.com.ar' },
   { name: 'Naranja X', from: 'naranjax.com' },
   { name: 'Ualá', from: 'uala.com.ar' },
-  // No due statement, only "Pagaste $ X": already paid.
+  // No due statement, only the amount paid: already paid.
   {
     name: 'Mercado Pago',
-    subject: new RegExp(`(?=.*(?:${RECEIPT.source}))(?=.*(?:${CREDIT_CARD.source}))`, 'i'),
-    amount: new RegExp(`\\b(?:total(?: a pagar)?|importe|monto|saldo actual|pagaste)[^\\d$]{0,40}?${PESOS}\\s*([\\d.,]+)`, 'i'),
+    subject: new RegExp(
+      `(?=.*(?:${RECEIPT.source}))(?=.*(?:${CREDIT_CARD.source}))`, 'i'),
+    amount: amountAfter(`${AMOUNT_KEYWORDS}|pagaste`),
     status: STATUS_PAID,
   },
 ];
@@ -95,13 +107,15 @@ const BILLS = [
     // Taxes
     'Municipio',
   ].map((name) => ({ name, ...BILL_PATTERNS })),
-  // Water in installments: one row per installment, named "CUOTA 1", with its
-  // own due date. `items` is global: name, amount, due date.
+  // Water in installments: one row per installment, named after its number,
+  // with its own due date. `items` is global: name, amount, due date.
   {
     name: 'AYSAM',
     from: 'aysam.com.ar',
     ...BILL_PATTERNS,
-    items: /(CUOTA \d+):\s*\$\s*([\d.,]+)\s*VTO:\s*(\d{1,2}\/\d{1,2}\/\d{2,4})/gi,
+    items: new RegExp(
+      /(CUOTA \d+):\s*\$\s*([\d.,]+)\s*/.source
+        + /VTO:\s*(\d{1,2}\/\d{1,2}\/\d{2,4})/.source, 'gi'),
   },
   // Home insurance: only its due notice counts.
   {
@@ -179,10 +193,12 @@ const CATEGORIES = {
   },
   'Tarjetas': {
     entries: CREDIT_CARDS,
-    // "Resumen" plus a card, in any order, so account statements (caja de
-    // ahorro, cuenta corriente) are ignored. Galicia's card statement is
-    // "Resumen de Cuenta VISA", so "cuenta" alone can't rule one out.
-    subject: /^(?=.*resumen)(?=.*(?:tarjeta|visa|master|amex|american express|cabal|naranja))/i,
+    // "Resumen" plus a card, in any order, so account statements are
+    // ignored. Some card statements also say "cuenta", so that word alone
+    // can't rule one out.
+    subject: new RegExp(/^(?=.*resumen)/.source
+      + /(?=.*(?:tarjeta|visa|master|amex|american express|cabal|naranja))/
+        .source, 'i'),
     amount: AMOUNT_ARS,
     usd: AMOUNT_USD,
     due: DUE_DATE,
@@ -190,7 +206,10 @@ const CATEGORIES = {
   },
   'Transporte': {
     entries: [
-      { name: 'Uber', from: 'uber.com', subject: /viaje|trip/i, excludeSubject: /eats/i },
+      {
+        name: 'Uber', from: 'uber.com', subject: /viaje|trip/i,
+        excludeSubject: /eats/i,
+      },
       { name: 'Cabify', from: 'cabify.com', subject: /viaje|recibo|trip/i },
     ],
     amount: AMOUNT_ARS,
@@ -213,7 +232,7 @@ const CATEGORIES = {
     amount: AMOUNT_ARS,
     status: STATUS_PAID,
   },
-  // Also gets PedidosYa Market orders, rerouted from Delivery
+  // Also gets the grocery orders rerouted from Delivery
   'Supermercado': {
     entries: [
       // Supermarket chains' online orders. Short or common names go by
@@ -265,9 +284,8 @@ const CATEGORIES = {
   },
 };
 
-// Payment and transfer confirmations, from any wallet or homebanking ("Pago
-// aprobado en X", "Pagaste tu factura de X", "Transferiste a X"). They're not
-// a column: each one is a Pagado row named after the `payee` (or the
+// Payment and transfer confirmations, from any wallet or homebanking. They're
+// not a column: each one is a Pagado row named after the `payee` (or the
 // subject), in the category of a known sender with that name, or `category`
 // if none.
 // Paid by credit card (skipIf), it adds nothing: it's already in the
@@ -278,24 +296,28 @@ const PAYMENTS = {
     { name: 'Mercado Pago', from: 'mercadopago.com.ar' },
     // Bill payment gateway: the bill is already a row, so its confirmation
     // is marked as processed without one (skipIf matches any body).
-    { name: 'Pagomiscuentas', from: 'avisos@pagomiscuentas.com', skipIf: /[\s\S]*/ },
-    // Reads invoices due from Brubank: one row per invoice ("Edemsa: $ 1.234
-    // Vence el 07-11-2026"). `items` is global: name, amount, due date.
+    {
+      name: 'Pagomiscuentas',
+      from: 'avisos@pagomiscuentas.com',
+      skipIf: /[\s\S]*/,
+    },
+    // Reads the invoices due that the bank lists: one row per invoice.
+    // `items` is global: name, amount, due date.
     {
       name: 'Brubank',
       from: 'brubank.com',
       subject: /por vencer/i,
-      items: /([A-ZÁÉÍÓÚÑ][^:.,$]{0,40}?):\s*\$\s*([\d.,]+)\s*Vence el (\d{1,2}[-/]\d{1,2}[-/]\d{2,4})/g,
+      items: new RegExp(
+        /([A-ZÁÉÍÓÚÑ][^:.,$]{0,40}?):\s*\$\s*([\d.,]+)\s*/.source
+          + /Vence el (\d{1,2}[-/]\d{1,2}[-/]\d{2,4})/.source, 'g'),
       category: 'Hogar',
       status: STATUS_TO_PAY,
       // Not paid yet, so it can't be in a card statement
       skipIf: null,
     },
-    // Any other sender: payment confirmations from gateways and shops ("Tu
-    // pago ha sido acreditado a X.", "Pago aprobado", "Confirmación de
-    // compra"). Emails from a known sender (Mercado Pago included) never get
-    // here. Named after the payee in the subject or, failing that, the
-    // sender's name.
+    // Any other sender: payment confirmations from gateways and shops.
+    // Emails from a known sender (wallets included) never get here. Named
+    // after the payee in the subject or, failing that, the sender's name.
     {
       name: 'Otros pagos',
       anySender: true,
@@ -303,7 +325,8 @@ const PAYMENTS = {
       // `subject` decides
       query: 'subject:(pago OR compra OR payment OR comprobante OR recibo)',
       subject: new RegExp([
-        'pago (?:ha sido |fue )?(?:acreditado|aprobado|confirmado|exitoso|realizado|recibido)',
+        'pago (?:ha sido |fue )?(?:acreditado|aprobado|confirmado|exitoso|'
+          + 'realizado|recibido)',
         '(?:confirmaci[oó]n|comprobante|recibo) de (?:tu )?(?:pago|compra)',
         'recibimos tu pago',
         'compra (?:fue )?(?:aprobada|confirmada|exitosa)',
@@ -311,8 +334,12 @@ const PAYMENTS = {
         'payment (?:confirmation|received|successful|receipt)',
       ].join('|'), 'i'),
       // NOT_PAID, plus bills and reminders, which come before paying
-      excludeSubject: new RegExp(`${NOT_PAID.source}|vence|vencimiento|recordatorio|reminder|\\bdue\\b`, 'i'),
-      payee: /(?:acreditado|aprobado|realizado|pago|compra) (?:a|en)\s+(.+?)\.?$/i,
+      excludeSubject: new RegExp([
+        NOT_PAID.source, 'vence', 'vencimiento', 'recordatorio', 'reminder',
+        '\\bdue\\b',
+      ].join('|'), 'i'),
+      payee:
+        /(?:acreditado|aprobado|realizado|pago|compra) (?:a|en)\s+(.+?)\.?$/i,
       category: 'Otros',
     },
   ],
@@ -320,8 +347,15 @@ const PAYMENTS = {
   // NOT_PAID, plus purchases already handled by their own entry in Compras
   excludeSubject: new RegExp(`${NOT_PAID.source}|mercado ?libre`, 'i'),
   // On the subject; the capture group is who was paid
-  payee: /(?:aprobado en|pagaste(?: tu factura de| a)?|compraste a|pago (?:a|de|en)|transferiste a|transferencia a|enviaste dinero a)\s+(.+)$/i,
-  amount: new RegExp(`\\b(?:pagaste|transferiste|enviaste|pago de|total|importe|monto)[^\\d$]{0,40}?${PESOS}\\s*([\\d.,]+)`, 'i'),
+  payee: new RegExp('(?:' + [
+    'aprobado en', 'pagaste(?: tu factura de| a)?', 'compraste a',
+    'pago (?:a|de|en)', 'transferiste a', 'transferencia a',
+    'enviaste dinero a',
+  ].join('|') + ')\\s+(.+)$', 'i'),
+  amount: amountAfter([
+    'pagaste', 'transferiste', 'enviaste', 'pago de', 'total', 'importe',
+    'monto',
+  ].join('|')),
   skipIf: CREDIT_CARD,
   category: 'Compras',
   status: STATUS_PAID,

@@ -10,3 +10,6 @@ jsconfig.json
 
 # Account the deploy must run as
 .env
+
+# Browser steps setup.sh already finished
+.setup-done

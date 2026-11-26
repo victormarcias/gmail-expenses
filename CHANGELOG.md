@@ -33,9 +33,18 @@ and 1.1.0 is January 2027. An extra release within a month bumps the patch.
   project's account no longer logs this one out.
 - **Bills:** AYSAM installment bills give one Pagar row per installment.
 - **Categories:** `Servicios` is gone. Phone, internet and TV bills go to
-  `Hogar`, and digital services to `Suscripciones`. Tabs that already have a
-  `Servicios` column keep it.
+  `Hogar`, and digital services to `Suscripciones`.
 - **Project:** the Apps Script code lives in `source/`, which is what
   `clasp push` uploads.
+- **Setup:** `setup.sh` remembers the browser steps it finished and skips
+  them when run again.
+
+### Fixed
+
+- **Adjusted receipts:** only an earlier receipt from the same sender makes
+  an email an adjusted receipt. A reply or another email in the thread no
+  longer drops a real receipt.
+- **TOTAL:** a TOTAL row left among the data by rows added by hand below it
+  is removed, so totals aren't counted twice.
 
 [Unreleased]: https://github.com/victormarcias/gmail-expenses/commits/develop

@@ -14,9 +14,15 @@ function parseMessage(source, message) {
     source = { ...source, name: reroute.name, category: reroute.category };
   }
 
-  if (isAdjustedReceipt(message)) return { rows: [], skip: 'adjusted receipt of an earlier email in its thread' };
-  if (source.skipIf && source.skipIf.test(body)) return { rows: [], skip: 'skipIf matched' };
-  if (source.onlyIf && !source.onlyIf.test(body)) return { review: 'onlyIf did not match' };
+  if (isAdjustedReceipt(source, message)) {
+    return { rows: [], skip: 'adjusted receipt of an earlier receipt' };
+  }
+  if (source.skipIf && source.skipIf.test(body)) {
+    return { rows: [], skip: 'skipIf matched' };
+  }
+  if (source.onlyIf && !source.onlyIf.test(body)) {
+    return { review: 'onlyIf did not match' };
+  }
 
   // An email listing several bills: one row per bill, named and categorized
   // like a payment to it
@@ -37,8 +43,10 @@ function parseMessage(source, message) {
     return rows.length ? { rows } : { review: 'no item found' };
   }
 
-  const ars = source.amount ? parseAmount(firstMatch(source.amount, body)) : null;
-  const usd = source.usd ? parseAmount(firstMatch(source.usd, body)) : null;
+  const amountOf = (regex) =>
+    (regex ? parseAmount(firstMatch(regex, body)) : null);
+  const ars = amountOf(source.amount);
+  const usd = amountOf(source.usd);
   if (!ars && !usd) return { review: 'no amount found' };
 
   const base = {
@@ -53,7 +61,7 @@ function parseMessage(source, message) {
   if (source.payment) {
     const subject = message.getSubject();
     const payee = source.payee && firstMatch(source.payee, subject);
-    // Any sender: its name says more than a generic subject ("Pago aprobado")
+    // Any sender: its name says more than a generic subject
     base.detail = payee || (source.anySender && senderName(message)) || subject;
     base.category = categoryOf(base.detail) || source.category;
   }
@@ -72,27 +80,39 @@ function parseMessage(source, message) {
   return { rows };
 }
 
-// The From display name ("X <no-reply@x.com>" → X), or the address
+// The From display name, or the address
 function senderName(message) {
   const from = message.getFrom();
   const name = from.replace(/<[^>]*>/, '').replace(/"/g, '').trim();
   return name || from.replace(/[<>]/g, '').trim();
 }
 
-// An email that comes within ADJUSTED_RECEIPT_HOURS after an earlier one of its
-// thread is an adjusted receipt: the first email's amount is the one
-// that counts. Monthly emails that share a thread are too far apart for it.
-function isAdjustedReceipt(message) {
+// An email that comes within ADJUSTED_RECEIPT_HOURS after an earlier receipt
+// of its thread is an adjusted receipt: the first email's amount is the one
+// that counts. Only earlier emails from the same sender whose subject the
+// source matches are receipts; replies and other emails of the thread don't
+// count. Monthly emails that share a thread are too far apart for it.
+function isAdjustedReceipt(source, message) {
   const limit = ADJUSTED_RECEIPT_HOURS * 3600 * 1000;
   const date = message.getDate().getTime();
+  const sender = senderAddress(message);
   return message.getThread().getMessages().some((other) => {
     const gap = date - other.getDate().getTime();
-    return gap > 0 && gap < limit;
+    return gap > 0 && gap < limit
+      && senderAddress(other) === sender
+      && source.subject.test(other.getSubject());
   });
 }
 
-// The category of the first non-payment sender whose name is in `text`
-// ("X" → X's category), or null.
+// The sender's email address alone, lowercased
+function senderAddress(message) {
+  const from = message.getFrom();
+  const match = from.match(/<([^>]+)>/);
+  return (match ? match[1] : from).trim().toLowerCase();
+}
+
+// The category of the first non-payment sender whose name is in `text`, or
+// null.
 function categoryOf(text) {
   const source = sources().find((s) => !s.payment && sameName(text, s.name));
   return source ? source.category : null;
@@ -100,7 +120,8 @@ function categoryOf(text) {
 
 // Whether `name` appears in `text`, ignoring case, accents and spaces
 function sameName(text, name) {
-  const normalize = (value) => String(value).normalize('NFD').replace(/[\u0300-\u036f\s]/g, '').toLowerCase();
+  const normalize = (value) => String(value).normalize('NFD')
+    .replace(/[\u0300-\u036f\s]/g, '').toLowerCase();
   return Boolean(normalize(name)) && normalize(text).includes(normalize(name));
 }
 
@@ -108,7 +129,8 @@ function sameName(text, name) {
 // patterns removed: *bold* and _italic_ markers, and line breaks (everything
 // ends up on one line, single-spaced).
 function cleanBody(message) {
-  return message.getPlainBody().replace(/[*_]/g, '').replace(/\s+/g, ' ').trim();
+  return message.getPlainBody()
+    .replace(/[*_]/g, '').replace(/\s+/g, ' ').trim();
 }
 
 function firstMatch(regex, text) {
@@ -121,7 +143,8 @@ function firstMatch(regex, text) {
 // left is a thousands one, whichever the format.
 function parseAmount(text) {
   if (!text) return null;
-  const [, integer, decimals] = text.replace(/[.,]+$/, '').match(/^(.*?)(?:[.,](\d{1,2}))?$/);
+  const [, integer, decimals] = text.replace(/[.,]+$/, '')
+    .match(/^(.*?)(?:[.,](\d{1,2}))?$/);
   const amount = Number(`${integer.replace(/\D/g, '') || 0}.${decimals || 0}`);
   return amount || null;
 }
@@ -157,11 +180,16 @@ function usdRate() {
   const lastKey = `LAST_FX_${USD_RATE}`;
 
   try {
-    const response = UrlFetchApp.fetch(DOLARAPI_URL + USD_RATE, { muteHttpExceptions: true });
+    const response = UrlFetchApp.fetch(DOLARAPI_URL + USD_RATE,
+      { muteHttpExceptions: true });
     if (response.getResponseCode() === 200) {
       const data = JSON.parse(response.getContentText());
       if (data.venta > 0) {
-        cachedRate = { rate: data.venta, date: data.fechaActualizacion.slice(0, 10), stale: false };
+        cachedRate = {
+          rate: data.venta,
+          date: data.fechaActualizacion.slice(0, 10),
+          stale: false,
+        };
         props.setProperty(lastKey, JSON.stringify(cachedRate));
         return cachedRate;
       }
