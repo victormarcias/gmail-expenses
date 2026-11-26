@@ -10,12 +10,6 @@ and 1.1.0 is January 2027. An extra release within a month bumps the patch.
 
 ## [Unreleased]
 
-### Changed
-
-- **Deploy:** `deploy.sh` replaces `deploy-script.sh` and
-  `deploy-webapp.sh`: every deploy also updates the web app, and `--open`
-  opens the project.
-
 ## [0.11.0] - 2026-11-26
 
 ### Added
@@ -23,8 +17,7 @@ and 1.1.0 is January 2027. An extra release within a month bumps the patch.
 - **Manual entry:** a one-screen web page (category, detail, price, Add) that
   writes a paid row into the current month's tab. It is served by the script
   as a web app only its owner can open, with the project logo on the page and
-  a square favicon on its tab. `deploy-webapp.sh` installs it and prints its
-  URL.
+  a square favicon on its tab. `deploy.sh` installs it and prints its URL.
 - **Categories:** `Ocio`, `Mascotas`, `Impuestos`, `Educación` and
   `Vacaciones`, for manual entries. The web app shows them as a
   grid of colored emoji buttons; the chosen one stays pressed and its name

@@ -11,12 +11,6 @@ Las versiones son `<años desde 2026>.<mes>.<parche>`: 0.11.0 es noviembre de
 
 ## [Unreleased]
 
-### Cambiado
-
-- **Deploy:** `deploy.sh` reemplaza a `deploy-script.sh` y
-  `deploy-webapp.sh`: cada deploy también actualiza la web app, y `--open`
-  abre el proyecto.
-
 ## [0.11.0] - 2026-11-26
 
 ### Agregado
@@ -25,7 +19,7 @@ Las versiones son `<años desde 2026>.<mes>.<parche>`: 0.11.0 es noviembre de
   precio, Agregar) que escribe una fila pagada en la pestaña del mes actual.
   La sirve el script como web app que solo su dueño puede abrir, con el logo
   del proyecto en la página y un favicon cuadrado en su pestaña.
-  `deploy-webapp.sh` la instala e imprime su URL.
+  `deploy.sh` la instala e imprime su URL.
 - **Categorías:** `Ocio`, `Mascotas`, `Impuestos`, `Educación` y
   `Vacaciones`, para cargas manuales. La web app las muestra como una
   grilla de botones de colores con emoji; la elegida queda
