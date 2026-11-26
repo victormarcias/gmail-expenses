@@ -1,0 +1,38 @@
+name: PR Agent
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review, synchronize]
+  issue_comment:
+    types: [created]
+jobs:
+  pr_agent_job:
+    # Pull request events, and PR comments from the repo's owner only:
+    # anyone else's comment can't run the agent.
+    if: >-
+      github.event.sender.type != 'Bot' && (
+        github.event_name == 'pull_request' || (
+          github.event.issue.pull_request &&
+          github.event.comment.author_association == 'OWNER'
+        )
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    name: Qodo
+    steps:
+      - name: The PR Agent action step
+        id: pragent
+        # Pinned to the v0.50.0 commit: a branch or tag can be moved
+        uses: the-pr-agent/pr-agent@e673a02076ce09a4726c3d0c3cc85780e59ca52b
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          config.model: "deepseek/deepseek-v4-flash"
+          config.fallback_models: '["deepseek/deepseek-v4-pro"]'
+          DEEPSEEK.KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          github_action_config.pr_actions: '["opened", "reopened", "ready_for_review", "synchronize"]'
+          pr_reviewer.num_max_findings: "100"
+          pr_code_suggestions.num_code_suggestions_per_chunk: "5"
+          pr_code_suggestions.commitable_code_suggestions: "true"

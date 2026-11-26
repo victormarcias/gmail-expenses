@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <style>
+    * { box-sizing: border-box; }
+    html { overscroll-behavior: none; }
+    /* min-height, not height: if the content is taller than the screen the
+       page grows and scrolls, instead of being cut. The bottom padding
+       keeps clear of the iPhone's home indicator. */
+    body {
+      min-height: 100dvh; overscroll-behavior: none;
+      touch-action: manipulation;
+      margin: 0; font: 18px -apple-system, system-ui, sans-serif;
+      padding: 24px 16px max(24px, env(safe-area-inset-bottom));
+      background: #f4f4f5; color: #18181b;
+    }
+    main { max-width: 420px; margin: 0 auto; display: grid; gap: 14px; }
+    input, button {
+      width: 100%; padding: 16px; font: inherit; border-radius: 12px;
+      border: 1px solid #d4d4d8; background: #fff; color: inherit;
+    }
+    /* Category grid: one colored button per category. The chosen one stays
+       pressed (a little smaller) with a ring around it. */
+    #categories {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+    }
+    .cat {
+      padding: 0; border: 0; aspect-ratio: 1 / .85;
+      font-size: 30px; line-height: 1;
+      transition: transform .15s ease, outline-offset .15s ease;
+      outline: 3px solid transparent; outline-offset: 0;
+    }
+    .cat:active, .cat[aria-pressed="true"] { transform: scale(.88); }
+    .cat[aria-pressed="true"] { outline-color: #18181b; outline-offset: 3px; }
+    #chosen { text-align: center; font-weight: 600; min-height: 1.4em; }
+    #chosen:empty::before { content: 'Elegí una categoría'; color: #71717a;
+                            font-weight: 400; }
+    button { background: #18181b; color: #fff; border: 0; font-weight: 600; }
+    button:disabled { opacity: .5; }
+    #add { transition: background-color .3s ease, transform .15s ease; }
+    #add:active { transform: scale(.98); }
+    #add[data-state] { opacity: 1; }
+    #add[data-state="loading"] { background: #52525b; }
+    #add[data-state="done"] { background: #15803d; }
+    #add .state { display: inline-flex; align-items: center; gap: .4em;
+                  animation: swap .25s ease; }
+    @keyframes swap { from { opacity: 0; transform: translateY(6px); } }
+    #add svg {
+      width: 1.3em; height: 1.3em;
+      animation: pop .35s cubic-bezier(.2, 1.6, .4, 1);
+    }
+    @keyframes pop { from { transform: scale(0); } }
+    .dots i {
+      display: inline-block; width: .3em; height: .3em; margin-left: .2em;
+      border-radius: 50%; background: currentColor;
+      animation: blink 1s infinite;
+    }
+    .dots i:nth-child(2) { animation-delay: .15s; }
+    .dots i:nth-child(3) { animation-delay: .3s; }
+    @keyframes blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+    /* The logo follows the screen's height */
+    .logo { display: block; margin: 0 auto; width: min(211px, 18dvh); }
+
+    /* On load, each block rises into place one after the other */
+    main > * { animation: rise .45s cubic-bezier(.2, .8, .2, 1) backwards; }
+    main > :nth-child(2) { animation-delay: .05s; }
+    main > :nth-child(3) { animation-delay: .1s; }
+    main > :nth-child(4) { animation-delay: .15s; }
+    main > :nth-child(5) { animation-delay: .2s; }
+    main > :nth-child(6) { animation-delay: .25s; }
+    main > :nth-child(7) { animation-delay: .3s; }
+    @keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+    }
+    #msg { text-align: center; min-height: 1.4em; }
+    .ok { color: #15803d; } .err { color: #b91c1c; }
+  </style>
+</head>
+<body>
+  <main>
+    <img class="logo" src="<?= logoUrl ?>" alt="Gmail Expenses">
+    <div id="categories" role="group" aria-label="Categoría"></div>
+    <div id="chosen" aria-live="polite"></div>
+    <input id="detail" placeholder="Detalle" autocomplete="off"
+           aria-label="Detalle">
+    <input id="amount" inputmode="numeric" placeholder="Precio"
+           autocomplete="off" aria-label="Precio">
+    <button id="add" disabled><span class="state">Agregar</span></button>
+    <div id="msg"></div>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const grid = $('categories'), chosen = $('chosen'), detail = $('detail');
+    const amount = $('amount'), add = $('add'), msg = $('msg');
+
+    // Google's Material Symbols (Apache 2.0)
+    const icon = (path) =>
+      '<svg viewBox="0 -960 960 960" fill="currentColor">' +
+      `<path d="${path}"/></svg>`;
+
+    // The Add button tells the story itself: Agregar → Agregando… → ✓ Agregado
+    const CHECK_ICON =
+      icon('M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z');
+    const ADD_STATES = {
+      idle: 'Agregar',
+      loading: 'Agregando<span class="dots"><i></i><i></i><i></i></span>',
+      done: `${CHECK_ICON} Agregado`,
+    };
+    let addState = 'idle', category = '';
+
+    // Add only works when idle, with a category chosen and a price typed
+    function refreshAdd() {
+      add.disabled =
+        addState !== 'idle' || !category || !digitsOf(amount.value);
+    }
+
+    function setAdd(state) {
+      addState = state;
+      add.innerHTML = `<span class="state">${ADD_STATES[state]}</span>`;
+      if (state === 'idle') delete add.dataset.state;
+      else add.dataset.state = state;
+      refreshAdd();
+    }
+
+    // A tap anywhere but a field closes the keyboard. The layout moves when it
+    // does, which can leave the Add button under a finger that touched down
+    // elsewhere: a click only counts if its touch started on the button.
+    let pressedAdd = false;
+    document.addEventListener('pointerdown', (e) => {
+      pressedAdd = !!e.target.closest('#add');
+      if (!e.target.closest('input')) document.activeElement.blur();
+    });
+
+    function show(text, kind) {
+      msg.textContent = text;
+      msg.className = kind || '';
+    }
+
+    // Whole pesos only: the field keeps the digits and shows them as a price
+    const digitsOf = (text) => text.replace(/\D/g, '').replace(/^0+/, '');
+
+    // A digit that would pass the maximum is ignored
+    const MAX_AMOUNT = <?= maxAmount ?>;
+    let lastDigits = '';
+
+    amount.addEventListener('input', () => {
+      let digits = digitsOf(amount.value);
+      if (Number(digits) > MAX_AMOUNT) digits = lastDigits;
+      lastDigits = digits;
+      amount.value = digits
+        ? '$ ' + digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+        : '';
+      refreshAdd();
+    });
+
+    // Written by doGet, so the page needs no call to show them
+    const CATEGORIES = <?!= JSON.stringify(categories) ?>;
+
+    for (const c of CATEGORIES) {
+      const button = document.createElement('button');
+      button.className = 'cat';
+      button.textContent = c.emoji;
+      button.style.background = c.color;
+      button.setAttribute('aria-label', c.name);
+      button.setAttribute('aria-pressed', 'false');
+      button.addEventListener('click', () => {
+        for (const other of grid.children) {
+          other.setAttribute('aria-pressed', 'false');
+        }
+        button.setAttribute('aria-pressed', 'true');
+        category = c.name;
+        chosen.textContent = c.name;
+        refreshAdd();
+      });
+      grid.appendChild(button);
+    }
+
+    // Adds the row. While the automatic run holds the sheet, the server
+    // writes nothing and says so: the page says why it waits and tries again
+    // every 3 seconds.
+    function save(chosenCategory, value, text) {
+      google.script.run
+        .withSuccessHandler((result) => {
+          if (result && result.busy) {
+            show('Corrida automática en curso…');
+            setTimeout(() => save(chosenCategory, value, text), 3000);
+            return;
+          }
+          show('');
+          amount.value = '';
+          lastDigits = '';
+          detail.value = '';
+          setAdd('done');
+          setTimeout(() => setAdd('idle'), 1800);
+        })
+        .withFailureHandler((e) => {
+          setAdd('idle');
+          show(e.message, 'err');
+        })
+        .addExpense(chosenCategory, value, text);
+    }
+
+    add.addEventListener('click', (e) => {
+      // detail 0 is a click from the keyboard (Enter, Space): it needs no touch
+      if (e.detail !== 0 && !pressedAdd) return;
+      pressedAdd = false;
+      const value = parseInt(digitsOf(amount.value) || '0', 10);
+      if (!(value > 0)) return;
+      setAdd('loading');
+      show('');
+      save(category, value, detail.value);
+    });
+  </script>
+</body>
+</html>

@@ -39,6 +39,14 @@ script_id() {
   sed -n 's/.*"scriptId": *"\([^"]*\)".*/\1/p' .clasp.json
 }
 
+# Browser steps can't be checked from here, so each one finished is written
+# to this git-ignored file and skipped on the next run. Project steps carry
+# the script ID, so a new project goes through them again. Deleting the
+# file repeats them all.
+DONE_FILE=.setup-done
+done_before() { [[ -f $DONE_FILE ]] && grep -qxF "$1" "$DONE_FILE"; }
+mark_done() { printf '%s\n' "$1" >> "$DONE_FILE"; }
+
 # 1. clasp -------------------------------------------------------------------
 
 step "clasp (Google's CLI for Apps Script)"
@@ -51,7 +59,10 @@ else
   npm install -g @google/clasp
 fi
 
-if [[ -f ~/.clasprc.json ]]; then
+# Its own named clasp user, so other projects' sessions are left alone
+clasp() { command clasp --user gmail-expenses "$@"; }
+
+if clasp show-authorized-user 2>&1 | grep -q 'logged in as'; then
   info "Already logged in."
 else
   info "Log in with the Google account whose Gmail will be read."
@@ -59,23 +70,16 @@ else
 fi
 
 step "Apps Script API"
-info "Turn on \"Google Apps Script API\" (clasp needs it to upload code)."
-open_url "https://script.google.com/home/usersettings"
-pause
-
-# 2. Transfer aliases ----------------------------------------------------------
-
-step "Transfer aliases (optional)"
-if [[ -f Transfers.gs ]]; then
-  info "Transfers.gs already exists."
+if done_before api; then
+  info "Already turned on."
 else
-  cp Transfers.example.gs Transfers.gs
-  info "Created Transfers.gs (git-ignored). Add the aliases you transfer to"
-  info "and their category; without any, transfers go to Compras."
+  info "Turn on \"Google Apps Script API\" (clasp needs it to upload code)."
+  open_url "https://script.google.com/home/usersettings"
   pause
+  mark_done api
 fi
 
-# 3. Apps Script project -------------------------------------------------------
+# 2. Apps Script project -------------------------------------------------------
 
 step "Apps Script project"
 if [[ -f .clasp.json ]]; then
@@ -87,12 +91,12 @@ else
   else
     # create-script overwrites appsscript.json and pulls a sample Code.js
     manifest=$(mktemp)
-    cp appsscript.json "$manifest"
+    cp source/appsscript.json "$manifest"
     created=true
     clasp create-script --type standalone --title "Gmail Expenses" \
-      --rootDir . || created=false
-    mv "$manifest" appsscript.json
-    rm -f Code.js
+      --rootDir source || created=false
+    mv "$manifest" source/appsscript.json
+    rm -f source/Code.js
     $created || fail "clasp couldn't create the project."
   fi
   info "Linked to $(script_id)."
@@ -101,30 +105,40 @@ fi
 info "Uploading the code…"
 clasp push --force
 
-# 4. The sheet -----------------------------------------------------------------
+# 3. The sheet -----------------------------------------------------------------
 
 step "Google Sheet"
-info "Create a sheet (or use an existing one), and set"
-info "File → Settings → Locale to Argentina."
-open_url "https://sheets.new"
-read -rp "  Paste the sheet's URL (or its ID): " url
-file_id=$(printf '%s' "$url" | sed -E 's#.*/d/([^/?#]+).*#\1#')
-[[ -n "$file_id" ]] || fail "Couldn't read an ID from that URL."
+if done_before "sheet $(script_id)"; then
+  info "Already set in Script Properties."
+else
+  info "Create a sheet (or use an existing one), and set"
+  info "File → Settings → Locale to Argentina."
+  open_url "https://sheets.new"
+  read -rp "  Paste the sheet's URL (or its ID): " url
+  file_id=$(printf '%s' "$url" | sed -E 's#.*/d/([^/?#]+).*#\1#')
+  [[ -n "$file_id" ]] || fail "Couldn't read an ID from that URL."
 
-step "Script Properties"
-info "In Project Settings → Script Properties, add a property named"
-info "FILE_ID with the sheet's ID as its value."
-copy "$file_id"
-open_url "https://script.google.com/home/projects/$(script_id)/settings"
-pause
+  step "Script Properties"
+  info "In Project Settings → Script Properties, add a property named"
+  info "FILE_ID with the sheet's ID as its value."
+  copy "$file_id"
+  open_url "https://script.google.com/home/projects/$(script_id)/settings"
+  pause
+  mark_done "sheet $(script_id)"
+fi
 
-# 5. The trigger ---------------------------------------------------------------
+# 4. The trigger ---------------------------------------------------------------
 
 step "Trigger"
-info "In the editor, pick install in the function menu, click Run and"
-info "accept the permissions. It creates the hourly trigger."
-open_url "https://script.google.com/home/projects/$(script_id)/edit"
-pause
+if done_before "trigger $(script_id)"; then
+  info "Already installed."
+else
+  info "In the editor, pick install in the function menu, click Run and"
+  info "accept the permissions. It creates the hourly trigger."
+  open_url "https://script.google.com/home/projects/$(script_id)/edit"
+  pause
+  mark_done "trigger $(script_id)"
+fi
 
 printf '\n%s✔ Done.%s From now on, every change is a clasp push.\n' \
   "$bold" "$reset"

@@ -1,5 +1,5 @@
 // Gmail Expenses: configuration. Senders, categories and their patterns are
-// in Categories.gs; transfer aliases, in Transfers.gs.
+// in Categories.gs.
 // author: @victormarcias
 //
 // Everything here is meant to be edited by hand. IDs (the spreadsheet's
@@ -9,8 +9,15 @@
 // doesn't guarantee the exact minute. Re-run install() after changing it.
 const RUN_EVERY_HOURS = 1;
 
-// How many hours back dryRun() looks, labeled emails included.
-const DRY_RUN_HOURS = 24;
+// How many hours back dryRun() also looks at emails that are already labeled.
+// Unlabeled inbox emails are always included, however old.
+const DRY_RUN_HOURS = 72;
+
+// An email that comes within this many hours after an earlier receipt of its
+// Gmail thread, from the same sender (an adjusted receipt, which repeats the
+// first one with a new amount) adds no row: the first email's amount is the
+// one that counts.
+const ADJUSTED_RECEIPT_HOURS = 2;
 
 // How much of the cleaned body dryRun() logs for emails that go to review.
 const DRY_RUN_BODY_LENGTH = 3000;
@@ -22,3 +29,22 @@ const USD_RATE = 'cripto';
 // Every handled email gets this label, read or not (the reason is in the
 // run's log), and is never looked at again by run().
 const LABEL = 'Gmail Expenses';
+
+// Order of the category buttons in the manual entry page, left to right and
+// top to bottom. A category missing here goes last, in sheet order.
+const WEB_APP_CATEGORY_ORDER = [
+  'Hogar',
+  'Suscripciones',
+  'Tarjetas',
+  'Compras',
+  'Delivery',
+  'Supermercado',
+  'Salud',
+  'Educación',
+  'Mascotas',
+  'Transporte',
+  'Ocio',
+  'Vacaciones',
+  'Impuestos',
+  'Otros',
+];

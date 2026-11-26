@@ -9,8 +9,9 @@
 //              old: from a known sender, or a payment confirmation from any
 //              other. The trigger calls this; it can also be run by hand at
 //              any time.
-//   dryRun()   logs what the last DRY_RUN_HOURS of emails would produce,
-//              without labeling them or touching the sheet.
+//   dryRun()   logs what run() would do with the inbox, plus the emails
+//              labeled in the last DRY_RUN_HOURS, without labeling anything or
+//              touching the sheet.
 
 function install() {
   openSpreadsheet();
@@ -45,9 +46,13 @@ function run() {
     const handled = [];
 
     // Unreadable emails are labeled too: the log is the only trace of them
-    const finished = scanMessages(null, false, (source, id, message, result) => {
-      if (result.review) console.error(`${logName(source, message)} "${message.getSubject()}": ${result.review}`);
-      else rows.push(...result.rows);
+    const finished = scanMessages(null, (source, id, message, result) => {
+      if (result.review) {
+        const email = `${logName(source, message)} "${message.getSubject()}"`;
+        console.error(`${email}: ${result.review}`);
+      } else {
+        rows.push(...result.rows);
+      }
       handled.push(id);
     }, deadline).finished;
 
@@ -55,14 +60,12 @@ function run() {
     // email's: a bill sent on the 31st is paid next month, so it belongs there.
     // Rows first, labels after: if writing fails, the emails stay unlabeled
     // and the next run retries them instead of losing them.
-    if (rows.length) {
-      const month = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM');
-      writeRows(spreadsheet, month, rows);
-    }
+    if (rows.length) writeRows(spreadsheet, monthTab(new Date()), rows);
     markMessages(handled, label);
 
     if (!finished) {
-      console.warn(`Time budget reached after ${handled.length} emails: run() again to continue.`);
+      console.warn(`Time budget reached after ${handled.length} emails: `
+        + 'run() again to continue.');
     }
   } finally {
     lock.releaseLock();
@@ -70,22 +73,28 @@ function run() {
 }
 
 // For tuning Categories.gs: one log line per email run() would handle,
-// labeled or not, saying what it would do with it.
-function dryRun(hours = DRY_RUN_HOURS) {
-  const since = Math.floor(Date.now() / 1000) - hours * 3600;
-  const formatDate = (date) => Utilities.formatDate(date, Session.getScriptTimeZone(), 'dd/MM/yyyy');
+// saying what it would do with it. Besides the pending ones (unlabeled, however
+// old), it includes the labeled ones from the last DRY_RUN_HOURS.
+function dryRun() {
+  const since = Math.floor(Date.now() / 1000) - DRY_RUN_HOURS * 3600;
+  const formatDate = (date) =>
+    Utilities.formatDate(date, Session.getScriptTimeZone(), 'dd/MM/yyyy');
+  const indent = '\n         ';
   let count = 0;
 
-  const { unmatched } = scanMessages(since, true, (source, id, message, result) => {
+  const { unmatched } = scanMessages(since, (source, id, message, result) => {
     count++;
-    const email = `[${source.category}] ${formatDate(message.getDate())} ${logName(source, message)} – ${message.getSubject()}`;
+    const email = `[${source.category}] ${formatDate(message.getDate())} `
+      + `${logName(source, message)} – ${message.getSubject()}`;
     if (result.review) {
       // The cleaned body is what the patterns run against, and it often
       // differs from how the email looks.
-      const body = JSON.stringify(cleanBody(message).slice(0, DRY_RUN_BODY_LENGTH));
-      console.log(`REVIEW   ${email}\n         ${result.review}\n         body: ${body}`);
+      const body = JSON.stringify(
+        cleanBody(message).slice(0, DRY_RUN_BODY_LENGTH));
+      console.log(
+        `REVIEW   ${email}${indent}${result.review}${indent}body: ${body}`);
     } else if (!result.rows.length) {
-      console.log(`SKIP     ${email}\n         skipIf matched`);
+      console.log(`SKIP     ${email}\n         ${result.skip}`);
     } else {
       result.rows.forEach((row, index) => {
         const details = [`$ ${row.ars}`];
@@ -98,23 +107,28 @@ function dryRun(hours = DRY_RUN_HOURS) {
     }
   });
 
-  unmatched.forEach((email) => console.log(`IGNORED  ${email}\n         subject didn't match`));
-  console.log(`${count} handled, ${unmatched.length} ignored in the last ${hours} hours.`);
+  unmatched.forEach((email) => {
+    console.log(`IGNORED  ${email}${indent}subject didn't match`);
+  });
+  console.log(`${count} handled, ${unmatched.length} ignored.`);
 }
 
 // Who the email is from, for the logs: an `anySender` source's name says
 // nothing about it
 function logName(source, message) {
-  return source.anySender ? `${source.name} (${senderName(message)})` : source.name;
+  return source.anySender
+    ? `${source.name} (${senderName(message)})`
+    : source.name;
 }
 
 // Calls handle(source, id, message, result) once per inbox email from a known
 // sender whose subject matches, or from any other sender for `anySender`
-// sources (`since`: unix seconds, or null for no limit). Stops early once
+// sources (`labeledSince`: unix seconds; labeled emails are skipped unless
+// they're newer, and null skips them all). Stops early once
 // `deadline` (ms timestamp) passes. Returns whether it got through every
 // email, and the emails from known senders that no subject matched, for
 // dryRun().
-function scanMessages(since, includeLabeled, handle, deadline = Infinity) {
+function scanMessages(labeledSince, handle, deadline = Infinity) {
   const seen = {};
   const unmatched = {};
   let finished = true;
@@ -124,29 +138,33 @@ function scanMessages(since, includeLabeled, handle, deadline = Infinity) {
   const isKnown = (from) => known.some((source) => sameName(from, source.from));
   // `anySender` last, so the known senders claim their emails first
   const scanned = sources()
-    .filter((source) => !source.viaPayments)
     .sort((a, b) => Boolean(a.anySender) - Boolean(b.anySender));
 
   scanned.forEach((source) => {
     if (!finished) return;
-    findMessageIds(source, since, includeLabeled).forEach((id) => {
-      // The same sender can feed two categories (Uber / Uber Eats)
+    findMessageIds(source, labeledSince).forEach((id) => {
+      // The same sender can feed two categories
       if (!finished || seen[id]) return;
       if (Date.now() > deadline) {
         finished = false;
         return;
       }
 
-      const message = GmailApp.getMessageById(id);
-      if (source.anySender && isKnown(message.getFrom())) return;
-      const subject = message.getSubject();
-      if (!source.subject.test(subject) || (source.excludeSubject && source.excludeSubject.test(subject))) {
+      // Only the headers, which is much lighter than the whole message: the
+      // full one is fetched below, once the subject is known to match
+      const { from, subject } = messageHeaders(id);
+      if (source.anySender && isKnown(from)) return;
+      const excluded = source.excludeSubject
+        && source.excludeSubject.test(subject);
+      if (!source.subject.test(subject) || excluded) {
         // Any email with "pago" in the subject: too many to list
         if (!source.anySender) unmatched[id] = `${source.name} – ${subject}`;
         return;
       }
       seen[id] = true;
       delete unmatched[id];
+
+      const message = GmailApp.getMessageById(id);
 
       let result;
       try {
@@ -164,19 +182,15 @@ function scanMessages(since, includeLabeled, handle, deadline = Infinity) {
 let cachedSources = null;
 
 // Flattens CATEGORIES into one source per sender, with the category defaults
-// applied. Fails early on incomplete entries, since Categories.gs is hand-edited.
+// applied. Fails early on incomplete entries, since Categories.gs is
+// hand-edited.
 function sources() {
   if (cachedSources) return cachedSources;
   if (!CATEGORIES[PAYMENTS.category]) {
     throw new Error(`PAYMENTS: unknown category "${PAYMENTS.category}".`);
   }
-  const aliases = transfers();
-  Object.keys(aliases).forEach((alias) => {
-    if (!CATEGORIES[aliases[alias]]) {
-      throw new Error(`TRANSFERS / ${alias}: unknown category "${aliases[alias]}".`);
-    }
-  });
-  const groups = Object.keys(CATEGORIES).map((category) => ({ ...CATEGORIES[category], category, group: category }));
+  const groups = Object.keys(CATEGORIES).map((category) => (
+    { ...CATEGORIES[category], category, group: category }));
   // Payments last: a wallet can also send card statements
   groups.push({ ...PAYMENTS, payment: true, group: 'PAYMENTS' });
 
@@ -188,16 +202,25 @@ function sources() {
       // when the payee isn't known)
       const source = { ...defaults, from: overrides.name, ...overrides };
       source.category = (defaults.payment && overrides.category) || category;
-      const fail = (problem) => { throw new Error(`${group} / ${source.name}: ${problem}.`); };
+      const fail = (problem) => {
+        throw new Error(`${group} / ${source.name}: ${problem}.`);
+      };
 
-      if (!CATEGORIES[source.category]) fail(`unknown category "${source.category}"`);
-      // Never scanned: only used to categorize payments
-      if (!source.viaPayments) {
-        if (!source.subject) fail('missing subject pattern');
-        if (!source.amount && !source.usd) fail('missing amount pattern');
-        if (!source.status) fail('missing status');
-        if (source.anySender && !source.query) fail('missing query');
+      if (!CATEGORIES[source.category]) {
+        fail(`unknown category "${source.category}"`);
       }
+      if (source.reroute && !CATEGORIES[source.reroute.category]) {
+        fail(`unknown reroute category "${source.reroute.category}"`);
+      }
+      if (!source.subject) fail('missing subject pattern');
+      if (!source.amount && !source.usd && !source.items) {
+        fail('missing amount pattern');
+      }
+      if (source.items && !source.items.global) {
+        fail('items pattern needs the g flag');
+      }
+      if (!source.status) fail('missing status');
+      if (source.anySender && !source.query) fail('missing query');
       result.push(source);
     });
   });

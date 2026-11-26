@@ -1,12 +1,15 @@
 # Holds the scriptId
 .clasp.json
 
-# Transfer aliases
-Transfers.gs
-
 # Apps Script autocomplete extension (VS Code)
 .gas-sync/
 jsconfig.json
 
 # macOS Finder metadata
 **/.DS_Store
+
+# Account the deploy must run as
+.env
+
+# Browser steps setup.sh already finished
+.setup-done

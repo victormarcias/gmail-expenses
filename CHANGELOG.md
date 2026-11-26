@@ -1,0 +1,55 @@
+# Changelog
+
+All notable changes to Gmail Expenses are documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+Versions are `<years since 2026>.<month>.<patch>`: 0.11.0 is November 2026
+and 1.1.0 is January 2027. An extra release within a month bumps the patch.
+
+[Español](CHANGELOG.es.md)
+
+## [Unreleased]
+
+## [0.11.0] - 2026-11-26
+
+### Added
+
+- **Manual entry:** a one-screen web page (category, detail, price, Add) that
+  writes a paid row into the current month's tab. It is served by the script
+  as a web app only its owner can open, with the project logo on the page and
+  a square favicon on its tab. `deploy.sh` installs it and prints its URL.
+- **Categories:** `Ocio`, `Mascotas`, `Impuestos`, `Educación` and
+  `Vacaciones`, for manual entries. The web app shows them as a
+  grid of colored emoji buttons; the chosen one stays pressed and its name
+  shows below. No category is chosen at first.
+- **Project:** logo at the top of the README, and a Spanish
+  `README.es.md`.
+
+### Changed
+
+- **Gmail:** handled emails are marked as read along with the label.
+- **Payments:** Pagomiscuentas confirmations are skipped: the bill is
+  already a row.
+- **Deploy:** clasp uses its own named user, so signing in to another
+  project's account no longer logs this one out.
+- **Bills:** AYSAM installment bills give one Pagar row per installment.
+- **Categories:** `Servicios` is gone. Phone, internet and TV bills go to
+  `Hogar`, and digital services to `Suscripciones`.
+- **Project:** the Apps Script code lives in `source/`, which is what
+  `clasp push` uploads.
+- **Setup:** `setup.sh` remembers the browser steps it finished and skips
+  them when run again.
+- **Manual entry:** adding an expense is faster: one call to the server
+  per Add, the row goes right above TOTAL with no sort, and the categories
+  come with the page.
+
+### Fixed
+
+- **Adjusted receipts:** only an earlier receipt from the same sender makes
+  an email an adjusted receipt. A reply or another email in the thread no
+  longer drops a real receipt.
+- **TOTAL:** a TOTAL row left among the data by rows added by hand below it
+  is removed, so totals aren't counted twice.
+
+[Unreleased]: https://github.com/victormarcias/gmail-expenses/compare/0.11.0...HEAD
+[0.11.0]: https://github.com/victormarcias/gmail-expenses/releases/tag/0.11.0
