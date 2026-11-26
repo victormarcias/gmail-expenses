@@ -23,6 +23,7 @@ function doGet() {
   const page = HtmlService.createTemplateFromFile('WebAppPage');
   page.logoUrl = LOGO_URL;
   page.maxAmount = MAX_AMOUNT;
+  page.categories = getCategories();
   return page.evaluate()
     .setFaviconUrl(FAVICON_URL)
     .setTitle(`$ Gmail Expenses - ${Session.getEffectiveUser().getEmail()}`)
@@ -71,9 +72,9 @@ const CATEGORY_COLORS = {
 };
 const CATEGORY_COLOR_DEFAULT = '#52525b';
 
-// Called from the page: every category as its name (what addExpense takes),
-// its emoji and its button color, in the order of WEB_APP_CATEGORY_ORDER.
-// Categories missing there come last, in sheet order.
+// Every category as its name (what addExpense takes), its emoji and its
+// button color, in the order of WEB_APP_CATEGORY_ORDER. Categories missing
+// there come last, in sheet order. doGet writes them into the page.
 function getCategories() {
   const order = WEB_APP_CATEGORY_ORDER;
   const rank = (name) =>
@@ -88,35 +89,29 @@ function getCategories() {
     }));
 }
 
-// Called from the page: true while run() holds the script lock, which it does
-// for its whole scan, so the page waits instead of failing.
-function isAutoRunning() {
-  const lock = LockService.getScriptLock();
-  if (!lock.tryLock(0)) return true;
-  lock.releaseLock();
-  return false;
-}
-
 // Called from the page: adds one paid row to the current month's tab. The
-// page sends the Detalle it shows.
+// page sends the Detalle it shows. While run() holds the script lock, which
+// it does for its whole scan, nothing is written and the result is
+// `{ busy: true }`, so the page waits and tries again instead of failing.
 function addExpense(category, amount, detail) {
   if (!amountHeaders().includes(category)) throw new Error('Unknown category');
   if (!(amount > 0 && amount <= MAX_AMOUNT)) throw new Error('Invalid amount');
 
   // The same lock as run(): never write the same tab at the same time
   const lock = LockService.getScriptLock();
-  lock.waitLock(30000);
+  if (!lock.tryLock(0)) return { busy: true };
   try {
     const now = new Date();
-    writeRows(openSpreadsheet(), monthTab(now), [{
+    writeManualRow(openSpreadsheet(), monthTab(now), {
       date: now,
       detail: String(detail || '').trim() || MANUAL_DETAIL,
       category,
       ars: amount,
       status: STATUS_PAID,
       note: '',
-    }]);
+    });
   } finally {
     lock.releaseLock();
   }
+  return { busy: false };
 }

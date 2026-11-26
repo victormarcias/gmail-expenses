@@ -62,6 +62,57 @@ function writeRows(spreadsheet, month, rows) {
   writeTotalRow(sheet, columnIndex, width, dataRows);
 }
 
+// Fast path for one row dated now, which belongs last and needs no sort: it
+// goes right above the TOTAL row, and only that row is formatted. A tab with
+// no TOTAL at the bottom, or missing the row's column, goes through
+// writeRows.
+function writeManualRow(spreadsheet, month, row) {
+  const sheet = spreadsheet.getSheetByName(month);
+  const lastRow = sheet ? sheet.getLastRow() : 0;
+  if (lastRow < 2) return writeRows(spreadsheet, month, [row]);
+
+  const tabHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn())
+    .getValues()[0].map(String);
+  const columnIndex = (header) => tabHeaders.indexOf(header) + 1;
+  const complete = headers().every((header) => tabHeaders.includes(header));
+  const totalAtBottom =
+    sheet.getRange(lastRow, columnIndex('Fecha')).getValue() === TOTAL_LABEL;
+  if (!complete || !totalAtBottom) {
+    return writeRows(spreadsheet, month, [row]);
+  }
+
+  sheet.insertRowBefore(lastRow);
+  const width = tabHeaders.length;
+  const formatOf = (header) => {
+    if (header === 'Fecha' || header === 'Vencimiento') return FORMAT_DATE;
+    if (header === 'USD') return FORMAT_USD;
+    return amountHeaders().includes(header) ? FORMAT_ARS : 'General';
+  };
+  sheet.getRange(lastRow, 1, 1, width)
+    .setValues([tabHeaders.map((header) => cellValue(row, header))])
+    .setNumberFormats([tabHeaders.map(formatOf)])
+    .setFontWeight('normal');
+  sheet.getRange(lastRow, columnIndex('Estado')).setDataValidation(
+    SpreadsheetApp.newDataValidation()
+      .requireValueInList([STATUS_TO_PAY, STATUS_PAID], true)
+      .build()
+  );
+
+  // The sums are rewritten in one call so they cover the new row. A plain
+  // text in setFormulas is read as a formula, so the TOTAL label goes after.
+  const totalRow = lastRow + 1;
+  const sumOf = (header) => {
+    const data = sheet.getRange(2, columnIndex(header), totalRow - 2, 1);
+    return `=SUM(${data.getA1Notation()})`;
+  };
+  sheet.getRange(totalRow, 1, 1, width).setFormulas([tabHeaders.map(
+    (header) => {
+      const summed = header === 'USD' || amountHeaders().includes(header);
+      return summed ? sumOf(header) : '';
+    })]);
+  sheet.getRange(totalRow, columnIndex('Fecha')).setValue(TOTAL_LABEL);
+}
+
 // Writes the header of a new tab, or appends the columns an existing tab is
 // missing. Returns the tab's headers.
 function ensureHeaders(sheet) {

@@ -39,6 +39,9 @@ Las versiones son `<años desde 2026>.<mes>.<parche>`: 0.11.0 es noviembre de
   sube `clasp push`.
 - **Setup:** `setup.sh` recuerda los pasos del browser que terminó y los
   saltea al correrlo de nuevo.
+- **Carga manual:** agregar un gasto es más rápido: una sola llamada al
+  servidor por Agregar, la fila va justo arriba del TOTAL sin ordenar, y las
+  categorías vienen con la página.
 
 ### Corregido
 

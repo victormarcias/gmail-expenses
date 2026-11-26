@@ -36,8 +36,6 @@
     }
     .cat:active, .cat[aria-pressed="true"] { transform: scale(.88); }
     .cat[aria-pressed="true"] { outline-color: #18181b; outline-offset: 3px; }
-    #categories .loading { grid-column: 1 / -1; text-align: center;
-                           padding: 56px 0; color: #71717a; }
     #chosen { text-align: center; font-weight: 600; min-height: 1.4em; }
     #chosen:empty::before { content: 'Elegí una categoría'; color: #71717a;
                             font-weight: 400; }
@@ -87,11 +85,7 @@
 <body>
   <main>
     <img class="logo" src="<?= logoUrl ?>" alt="Gmail Expenses">
-    <div id="categories" role="group" aria-label="Categoría">
-      <div class="loading">
-        Cargando categorías<span class="dots"><i></i><i></i><i></i></span>
-      </div>
-    </div>
+    <div id="categories" role="group" aria-label="Categoría"></div>
     <div id="chosen" aria-live="polite"></div>
     <input id="detail" placeholder="Detalle" autocomplete="off"
            aria-label="Detalle">
@@ -166,46 +160,52 @@
       refreshAdd();
     });
 
-    // Calls `then` once the automatic run is not holding the sheet, checking
-    // every 3 seconds and saying why it waits.
-    function whenFree(then) {
-      google.script.run
-        .withSuccessHandler((busy) => {
-          if (!busy) return then();
-          show('Corrida automática en curso…');
-          setTimeout(() => whenFree(then), 3000);
-        })
-        .withFailureHandler((e) => { setAdd('idle'); show(e.message, 'err'); })
-        .isAutoRunning();
+    // Written by doGet, so the page needs no call to show them
+    const CATEGORIES = <?!= JSON.stringify(categories) ?>;
+
+    for (const c of CATEGORIES) {
+      const button = document.createElement('button');
+      button.className = 'cat';
+      button.textContent = c.emoji;
+      button.style.background = c.color;
+      button.setAttribute('aria-label', c.name);
+      button.setAttribute('aria-pressed', 'false');
+      button.addEventListener('click', () => {
+        for (const other of grid.children) {
+          other.setAttribute('aria-pressed', 'false');
+        }
+        button.setAttribute('aria-pressed', 'true');
+        category = c.name;
+        chosen.textContent = c.name;
+        refreshAdd();
+      });
+      grid.appendChild(button);
     }
 
-    google.script.run
-      .withSuccessHandler((categories) => {
-        grid.replaceChildren();
-        for (const c of categories) {
-          const button = document.createElement('button');
-          button.className = 'cat';
-          button.textContent = c.emoji;
-          button.style.background = c.color;
-          button.setAttribute('aria-label', c.name);
-          button.setAttribute('aria-pressed', 'false');
-          button.addEventListener('click', () => {
-            for (const other of grid.children) {
-              other.setAttribute('aria-pressed', 'false');
-            }
-            button.setAttribute('aria-pressed', 'true');
-            category = c.name;
-            chosen.textContent = c.name;
-            refreshAdd();
-          });
-          grid.appendChild(button);
-        }
-      })
-      .withFailureHandler((e) => {
-        grid.replaceChildren();
-        show(e.message, 'err');
-      })
-      .getCategories();
+    // Adds the row. While the automatic run holds the sheet, the server
+    // writes nothing and says so: the page says why it waits and tries again
+    // every 3 seconds.
+    function save(chosenCategory, value, text) {
+      google.script.run
+        .withSuccessHandler((result) => {
+          if (result && result.busy) {
+            show('Corrida automática en curso…');
+            setTimeout(() => save(chosenCategory, value, text), 3000);
+            return;
+          }
+          show('');
+          amount.value = '';
+          lastDigits = '';
+          detail.value = '';
+          setAdd('done');
+          setTimeout(() => setAdd('idle'), 1800);
+        })
+        .withFailureHandler((e) => {
+          setAdd('idle');
+          show(e.message, 'err');
+        })
+        .addExpense(chosenCategory, value, text);
+    }
 
     add.addEventListener('click', (e) => {
       // detail 0 is a click from the keyboard (Enter, Space): it needs no touch
@@ -215,22 +215,7 @@
       if (!(value > 0)) return;
       setAdd('loading');
       show('');
-      whenFree(() => {
-        show('');
-        google.script.run
-          .withSuccessHandler(() => {
-            amount.value = '';
-            lastDigits = '';
-            detail.value = '';
-            setAdd('done');
-            setTimeout(() => setAdd('idle'), 1800);
-          })
-          .withFailureHandler((e) => {
-            setAdd('idle');
-            show(e.message, 'err');
-          })
-          .addExpense(category, value, detail.value);
-      });
+      save(category, value, detail.value);
     });
   </script>
 </body>

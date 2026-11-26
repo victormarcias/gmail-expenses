@@ -38,6 +38,9 @@ and 1.1.0 is January 2027. An extra release within a month bumps the patch.
   `clasp push` uploads.
 - **Setup:** `setup.sh` remembers the browser steps it finished and skips
   them when run again.
+- **Manual entry:** adding an expense is faster: one call to the server
+  per Add, the row goes right above TOTAL with no sort, and the categories
+  come with the page.
 
 ### Fixed
 
