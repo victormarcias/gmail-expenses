@@ -74,12 +74,12 @@ function writeManualRow(spreadsheet, month, row) {
   const tabHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn())
     .getValues()[0].map(String);
   const columnIndex = (header) => tabHeaders.indexOf(header) + 1;
+  // Checked first: the TOTAL lookup below needs the Fecha column
   const complete = headers().every((header) => tabHeaders.includes(header));
+  if (!complete) return writeRows(spreadsheet, month, [row]);
   const totalAtBottom =
     sheet.getRange(lastRow, columnIndex('Fecha')).getValue() === TOTAL_LABEL;
-  if (!complete || !totalAtBottom) {
-    return writeRows(spreadsheet, month, [row]);
-  }
+  if (!totalAtBottom) return writeRows(spreadsheet, month, [row]);
 
   sheet.insertRowBefore(lastRow);
   const width = tabHeaders.length;

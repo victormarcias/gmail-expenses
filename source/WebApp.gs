@@ -95,6 +95,8 @@ function getCategories() {
 // `{ busy: true }`, so the page waits and tries again instead of failing.
 function addExpense(category, amount, detail) {
   if (!amountHeaders().includes(category)) throw new Error('Unknown category');
+  // A text would pass the check and land in the sheet as text, out of SUM
+  amount = Number(amount);
   if (!(amount > 0 && amount <= MAX_AMOUNT)) throw new Error('Invalid amount');
 
   // The same lock as run(): never write the same tab at the same time

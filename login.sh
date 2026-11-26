@@ -18,8 +18,10 @@ set -a; source .env; set +a
 clasp() { command clasp --user gmail-expenses "$@"; }
 : "${CLASP_ACCOUNT:?✖ CLASP_ACCOUNT is empty in .env}"
 
+# clasp fails when no account is stored yet: that must reach the login
+# below instead of ending the script
 signed_in_as() {
-  clasp show-authorized-user 2>/dev/null |
+  { clasp show-authorized-user 2>/dev/null || true; } |
     sed -nE 's/.*logged in as ([^ ]+)\.$/\1/p'
 }
 
